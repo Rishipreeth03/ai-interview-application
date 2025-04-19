@@ -4,17 +4,32 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { FcGoogle } from 'react-icons/fc'
-import { supabase } from '../services/supaBaseClient'
+import { supabase } from '../services/supaBaseclient'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 const Page = () => {
-    const signinWithGoogle= async()=>{
-        const {error}= await supabase.auth.signInWithOAuth({
-            provider: 'google',
-        });
-        if(!error){
-            console.error("Error");
-        }
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/dashboard'); // Redirect to dashboard if user is authenticated
+      }
+    };
+
+    checkAuthStatus();
+  }, [router]);
+
+  const signinWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (!error) {
+      console.error("Error");
     }
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center px-4">
       <motion.div
@@ -35,7 +50,7 @@ const Page = () => {
         <p className="text-white/80 text-sm">Sign in with your Google account to continue</p>
 
         <Button className="w-full bg-white text-black hover:bg-gray-100 shadow-lg flex items-center justify-center gap-2 text-base font-medium transition-all duration-300"
-        onClick={signinWithGoogle}>
+          onClick={signinWithGoogle}>
           <FcGoogle size={20} />
           Login with Google
         </Button>
