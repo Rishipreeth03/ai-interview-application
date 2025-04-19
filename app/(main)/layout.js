@@ -1,13 +1,13 @@
 import React from 'react'
 import DashboardProvider from './provider'
 
-function DashboardLayout({children}) {
+function DashboardLayout({ children }) {
   return (
-    <div>
-        <DashboardProvider>
-            {children}
-        </DashboardProvider>
-      
+    <div className=' bg-secondary'>
+      <DashboardProvider>
+        {children}
+      </DashboardProvider>
+
     </div>
   )
 }
