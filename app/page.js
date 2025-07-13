@@ -12,9 +12,9 @@ export default function Home() {
     const checkAuthStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.push('/dashboard'); // Redirect to dashboard if user is authenticated
+        router.push('/dashboard');
       } else {
-        router.push('/auth'); // Redirect to auth page if user is not authenticated
+        router.push('/auth');
       }
     };
 

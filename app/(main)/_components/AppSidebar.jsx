@@ -17,9 +17,11 @@ import { Plus } from 'lucide-react'
 import { SideBarOptions } from '@/app/services/Constants'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
+import { Router, useRouter } from 'next/router'
+
 function AppSidebar() {
   const path = usePathname();
-
+  const router = useRouter
 
   return (
     <Sidebar className='w-[240px]'>
@@ -35,15 +37,19 @@ function AppSidebar() {
             <SidebarMenu>
               {SideBarOptions.map((option, index) => (
                 <SidebarMenuItem key={index} className='p-1'>
-                  <SidebarMenuButton asChild className={`p-3 ${option.path === path && 'bg-blue-200 text-white'} `}>
+                  <SidebarMenuButton asChild 
+                  className={`p-3 ${option.path === path && 'bg-blue-200 text-white'} `}>
                     <Link href={option.path}>
                       <option.icon className={` ${path == option.path && 'text-black'}`} />
-                      <span className={`text-[16px] font-medium ${path == option.path && 'text-black'}`}>{option.name}</span>
+                      <span className={`text-[16px] font-medium ${path == option.path && 'text-black'}`}  >
+                        {option.name}
+                        </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-
               ))}
+
+
             </SidebarMenu>
 
           </SidebarContent>

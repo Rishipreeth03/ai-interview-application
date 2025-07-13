@@ -1,7 +1,5 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import DashboardProvider from '../provider'
-import WelcomeContainer from './_components/WelcomeContainer'
 import { supabase } from '@/app/services/supaBaseclient'
 import { useRouter } from 'next/navigation'
 import CreateOptions from './_components/CreateOptions'

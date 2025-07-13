@@ -15,7 +15,7 @@ const Page = () => {
     const checkAuthStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.push('/dashboard'); // Redirect to dashboard if user is authenticated
+        router.push('/dashboard');
       }
     };
 

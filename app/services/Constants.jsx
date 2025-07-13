@@ -1,43 +1,43 @@
-import { BriefcaseBusinessIcon, Calendar, Code2Icon, LayoutDashboard, List, PuzzleIcon, Settings, User2Icon, WalletCards } from "lucide-react";
+import { BriefcaseBusinessIcon, Calendar, Code2Icon, LayoutDashboard, List, LogOut, PuzzleIcon, Settings, User2Icon, WalletCards } from "lucide-react";
 
-export const SideBarOptions=[
+export const SideBarOptions = [
     {
-        name:"DashBoard",
-        icon:LayoutDashboard,
-        path:'/dashboard'
+        name: "DashBoard",
+        icon: LayoutDashboard,
+        path: '/dashboard'
     },
     {
-        name:"Schedule Interview",
-        icon:Calendar,
-        path:'/schedule-interview'
+        name: "Schedule Interview",
+        icon: Calendar,
+        path: '/schedule-interview'
     },
     {
-        name:"All Interview",
-        icon:List,
-        path:'/all-interview'
+        name: "All Interview",
+        icon: List,
+        path: '/all-interview'
     },
     {
-        name:"Billing",
-        icon:WalletCards,
-        path:'/billing'
+        name: "Billing",
+        icon: WalletCards,
+        path: '/billing'
     },
     {
-        name:"Settings",
-        icon:Settings,
-        path:'/settings'
-    }
+        name: "Settings",
+        icon: Settings,
+        path: '/settings'
+    },
 ]
-export const InterviewType=[
+export const InterviewType = [
     {
-        title:'Technical',
-        icon : Code2Icon
+        title: 'Technical',
+        icon: Code2Icon
     },
     {
-        title:'Behavioral',
+        title: 'Behavioral',
         icon: User2Icon
     },
     {
-        title:'Expereince',
+        title: 'Expereince',
         icon: BriefcaseBusinessIcon
     },
     {
