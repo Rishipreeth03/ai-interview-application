@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import QuestionListContainer from './QuestionListContainer';
 import { useUser } from '@/app/provider';
 import { supabase } from '@/app/services/supaBaseclient';
-import {v4 as uuidv4} from 'uuid';
-function QuestionList({ formdata ,onCreateLink}) {
+import { v4 as uuidv4 } from 'uuid';
+
+function QuestionList({ formdata, onCreateLink }) {
   const [loading, setloading] = useState(false);
   const [questionslist, setquestionslist] = useState([]);
-  const {user}=useUser();
-  const [saveloading,setsaveloading]=useState(false); 
+  const { user } = useUser();
+  const [saveloading, setsaveloading] = useState(false);
   useEffect(() => {
     if (formdata) {
       generateQuestionList();
@@ -43,28 +44,28 @@ function QuestionList({ formdata ,onCreateLink}) {
     }
   };
 
-  const onFinish=async()=>{
-        setsaveloading(true);
-        console.log("Button clicked");
-        const interview_id=uuidv4();
-        const { data, error } = await supabase
-        .from('interviews')
-        .insert([
-        { 
-            ...formdata,
-            questionList:questionslist,
-            userEmail:user?.email,
-            interview_id:interview_id
-         },
-        ])
-        .select()
+  const onFinish = async () => {
+    setsaveloading(true);
+    console.log("Button clicked");
+    const interview_id = uuidv4();
+    const { data, error } = await supabase
+      .from('interviews')
+      .insert([
+        {
+          ...formdata,
+          questionList: questionslist,
+          userEmail: user?.email,
+          interview_id: interview_id
+        },
+      ])
+      .select()
 
-        setsaveloading(false);
-        onCreateLink(interview_id);
-       if(error){
-        toast.err('Server Error');
-       }
-        
+    setsaveloading(false);
+    onCreateLink(interview_id);
+    if (error) {
+      toast.err('Server Error');
+    }
+
   }
 
 
@@ -80,15 +81,15 @@ function QuestionList({ formdata ,onCreateLink}) {
         <div className="grid grid-cols-1 gap-4 mt-4">
           {questionslist.length > 0 ? (
             <>
-             <QuestionListContainer questionslist={questionslist}/>
-             
-            
-            <div className="mt-6 text-center">
-                <Button onClick={()=>onFinish()} disabled={saveloading}>Create Interview Link And Finish</Button>
-                {saveloading&&<Loader2Icon className='animate-spin'/>}
+              <QuestionListContainer questionslist={questionslist} />
+
+
+              <div className="mt-6 text-center">
+                <Button onClick={() => onFinish()} disabled={saveloading}>Create Interview Link And Finish</Button>
+                {saveloading && <Loader2Icon className='animate-spin' />}
               </div>
-              </>
-              
+            </>
+
           ) : (
             <p className="text-gray-500">No questions found.</p>
           )}
