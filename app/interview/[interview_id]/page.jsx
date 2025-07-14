@@ -5,7 +5,7 @@ import { Clock, Info, Loader2Icon, Video } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/app/services/supaBaseclient'
+import { supabase } from '@/app/services/supabaseClient'
 import { toast } from 'sonner'
 import { InterviewDataContext } from '@/context/InterviewDataContext'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ function Interview() {
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState('');
   const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
+  const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -31,6 +32,7 @@ function Interview() {
 
     setInterviewInfo({
       userName: userName,
+      userEmail: userEmail,
       interviewData: interviews[0],
     });
     router.push(`/interview/${interview_id}/start`);
@@ -75,6 +77,11 @@ function Interview() {
         <div className='w-full'>
           <h2>Enter your Full Name</h2>
           <Input placeholder='e.g. Rishipreeth' onChange={(e) => setUserName(e.target.value)} />
+        </div>
+
+        <div className='w-full'>
+          <h2>Enter your Email</h2>
+          <Input placeholder='e.g. rishi@gmail.com' onChange={(e) => setUserEmail(e.target.value)} />
         </div>
 
         <div className='p-3 bg-blue-100 rounded-lg mt-5 flex gap-2 items-start'>

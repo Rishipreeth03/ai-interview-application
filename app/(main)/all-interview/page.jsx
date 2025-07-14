@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/services/supaBaseclient'
-import InterviewCard from './InterviewCard'
 import { useUser } from '@/app/provider'
 import { toast } from 'sonner'
+import InterviewCard from '../dashboard/_components/InterviewCard'
 
-const LatestInterviewsList = () => {
-    const router = useRouter()
+function AllInterviews() {
+    const router = useRouter();
     const [interviewList, setInterviewList] = useState([]);
     const { user } = useUser();
 
@@ -22,8 +22,7 @@ const LatestInterviewsList = () => {
             .from("interviews")
             .select('*')
             .eq("userEmail", user?.email)
-            .order('created_at', { ascending: false })
-            .limit(6);
+            .order('created_at', { ascending: false });
 
         console.log(Interviews);
         setInterviewList(Interviews);
@@ -31,7 +30,7 @@ const LatestInterviewsList = () => {
 
     return (
         <div className='my-5'>
-            <h1 className='text-2xl font-bold'>Latest Interviews</h1>
+            <h1 className='text-2xl font-bold'>All Interviews</h1>
             {interviewList?.length == 0 &&
                 <div className='flex flex-col justify-center items-center mt-5 gap-2'>
                     <Video className='text-primary rounded-lg p-2 h-11 w-11' />
@@ -51,4 +50,4 @@ const LatestInterviewsList = () => {
     )
 }
 
-export default LatestInterviewsList
+export default AllInterviews
