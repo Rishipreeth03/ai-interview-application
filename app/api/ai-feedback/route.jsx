@@ -1,5 +1,6 @@
 import { FEEDBACK_PROMPT } from "@/app/services/Constants";
 import OpenAI from "openai";
+import { NextResponse } from 'next/server';
 
 export async function POST(req) {
     const { conversation } = await req.json();
@@ -9,7 +10,6 @@ export async function POST(req) {
         const openai = new OpenAI({
             baseURL: "https://openrouter.ai/api/v1",
             apiKey: process.env.OPEN_ROUTER_KEY,
-
         })
 
         const completion = await openai.chat.completions.create({
@@ -24,7 +24,6 @@ export async function POST(req) {
     }
     catch (e) {
         console.log(e);
-        return NextResponse.json(e);
+        return NextResponse.json({ error: e.message || String(e) });
     }
-
 }

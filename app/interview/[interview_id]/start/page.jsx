@@ -14,7 +14,11 @@ import { supabase } from '@/app/services/supaBaseclient';
 
 const StartInterview = () => {
     const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
-    const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+    const vapiRef = React.useRef();
+    if (!vapiRef.current) {
+        vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+    }
+    const vapi = vapiRef.current;
     const [activeUser, setActiveUser] = useState(false);
     const [conversation, setConversation] = useState();
     const { interview_id } = useParams();
@@ -127,6 +131,8 @@ const StartInterview = () => {
 
     const stopInterview = () => {
         vapi.stop();
+        toast("Interview Stopped");
+        router.replace('/interview/' + interview_id + '/completed');
     }
 
     useEffect(() => {
