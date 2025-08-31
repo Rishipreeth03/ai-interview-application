@@ -19,17 +19,14 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // Avoid browser-only logic here
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Provider>
           {children}
           <Toaster />
-
         </Provider>
-
       </body>
     </html>
   );
