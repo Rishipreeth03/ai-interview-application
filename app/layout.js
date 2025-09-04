@@ -24,7 +24,8 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning={true}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Provider>
-          {children}
+          {/* Wrap children in a div with suppressHydrationWarning to avoid hydration errors */}
+          <div suppressHydrationWarning={true}>{children}</div>
           <Toaster />
         </Provider>
       </body>

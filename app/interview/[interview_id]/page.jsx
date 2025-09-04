@@ -19,9 +19,25 @@ function Interview() {
   const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
 
+  // Move all data fetching and user checks inside useEffect (client-only)
   useEffect(() => {
-    interview_id && GetInterviewDetails();
-  }, [interview_id])
+    if (!interview_id) return;
+    GetInterviewDetails();
+  }, [interview_id]);
+
+  useEffect(() => {
+    // Only run on client
+    if (typeof window === "undefined") return;
+    const fetchAuthEmail = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data?.user?.email) {
+        router.back();
+        return;
+      }
+      setUserEmail(data.user.email);
+    };
+    fetchAuthEmail();
+  }, []);
 
   const onJoinInterview = async () => {
     setLoading(true);
@@ -35,7 +51,7 @@ function Interview() {
       userEmail: userEmail,
       interviewData: interviews[0],
     });
-    router.push(`/interview/${interview_id}/start`);
+    router.push(`/interview/${interview_id}/setup`);
     setLoading(false);
   }
 
@@ -59,46 +75,59 @@ function Interview() {
   }
 
   return (
-    <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
-      <div className='flex flex-col items-center justify-center border rounded-xl bg-white
-      p-7 lg:px-33 xl:px-52 mb-20'>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-indigo-100 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center border border-gray-100 rounded-3xl bg-white/80 shadow-2xl backdrop-blur-lg p-8 md:p-12 lg:p-16 space-y-6 transition-all duration-300">
         <Image src={'/logo.png'} alt='logo' width={200} height={100}
-          className='w-[140px]' />
-        <h2 className='mt-3'>AI-Powered Interview Platform</h2>
+          className="w-[140px] mb-2 drop-shadow-lg" />
+        <h2 className="mt-2 text-lg font-semibold text-indigo-700 tracking-wide">AI-Powered Interview Platform</h2>
 
         <Image src={'/interview.png'} alt='interview'
           width={500}
           height={500}
-          className='w-[280px] my-6' />
+          className="w-[220px] md:w-[280px] my-6 rounded-2xl shadow-lg border border-indigo-100" />
 
-        <h2 className='font-bold text-xl'>{interviewData?.jobPosition}</h2>
-        <h2 className='flex gap-2 items-center text-gray-500 mt-3'><Clock className='h-4 w-4' />{interviewData?.duration}</h2>
+        <h2 className="font-extrabold text-2xl text-gray-900 mb-1">{interviewData?.jobPosition}</h2>
+        <h2 className="flex gap-2 items-center text-indigo-500 mt-2 font-medium">
+          <Clock className="h-5 w-5" />
+          <span>{interviewData?.duration}</span>
+        </h2>
 
-        <div className='w-full'>
-          <h2>Enter your Full Name</h2>
-          <Input placeholder='e.g. Rishipreeth' onChange={(e) => setUserName(e.target.value)} />
+        <div className="w-full mb-2">
+          <h2 className="text-sm font-semibold text-gray-700 mb-1">Enter your Full Name</h2>
+          <Input
+            placeholder="e.g. Rishipreeth"
+            onChange={e => setUserName(e.target.value)}
+            className="rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+          />
         </div>
 
-        <div className='w-full'>
-          <h2>Enter your Email</h2>
-          <Input placeholder='e.g. rishi@gmail.com' onChange={(e) => setUserEmail(e.target.value)} />
+        <div className="w-full mb-2">
+          <h2 className="text-sm font-semibold text-gray-700 mb-1">Your Email</h2>
+          <Input
+            value={userEmail}
+            disabled
+            className="rounded-xl border-gray-200 bg-gray-50 text-gray-500"
+          />
         </div>
 
-        <div className='p-3 bg-blue-100 rounded-lg mt-5 flex gap-2 items-start'>
-          <Info className='text-primary' />
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl mt-4 flex gap-3 items-start shadow-sm border border-blue-100">
+          <Info className="text-blue-500 mt-1" />
           <div>
-            <h2 className='font-bold'>Before you begin</h2>
-            <ul>
-              <li className='text-sm text-gray-500'>- Test your camera and microphone</li>
-              <li className='text-sm text-gray-500'>- You can skip questions if you don't know the answer</li>
-              <li className='text-sm text-gray-500'>- Ensure you have stable internet connection</li>
+            <h2 className="font-bold text-gray-800 mb-1">Before you begin</h2>
+            <ul className="list-disc ml-4 space-y-1">
+              <li className="text-sm text-gray-600">Test your camera and microphone</li>
+              <li className="text-sm text-gray-600">You can skip questions if you don't know the answer</li>
+              <li className="text-sm text-gray-600">Ensure you have stable internet connection</li>
             </ul>
           </div>
         </div>
-        <Button disabled={loading || !userName}
-          onClick={() => onJoinInterview()}
-          className={'mt-5 w-full font-bold'}>
-          <Video /> {loading && <Loader2Icon />}
+        <Button
+          disabled={loading || !userName}
+          onClick={onJoinInterview}
+          className="mt-6 w-full font-bold py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg flex items-center justify-center gap-2 transition-all duration-200"
+        >
+          <Video className="mr-2" />
+          {loading && <Loader2Icon className="animate-spin mr-2" />}
           Start Interview
         </Button>
       </div>

@@ -1,0 +1,61 @@
+e:\AI-Recruiter\
+│
+├── app\
+│   ├── (main)\
+│   │   ├── dashboard\
+│   │   │   ├── _components\
+│   │   │   │   ├── InterviewCard.jsx
+│   │   │   │   ├── CreateOptions.jsx
+│   │   │   │   └── ...
+│   │   │   └── create-interview\
+│   │   │       ├── _components\
+│   │   │       │   ├── FormContainer.jsx
+│   │   │       │   ├── QuestionList.jsx
+│   │   │       │   ├── QuestionListContainer.jsx
+│   │   │       │   └── InterviewLink.jsx
+│   │   │       └── page.jsx
+│   │   ├── interview-taken\
+│   │   │   └── page.jsx
+│   │   ├── interview-details\
+│   │   │   └── page.jsx
+│   │   └── ...
+│   ├── interview\
+│   │   ├── [interview_id]\
+│   │   │   ├── page.jsx
+│   │   │   ├── setup\
+│   │   │   │   └── page.jsx
+│   │   │   ├── start\
+│   │   │   │   ├── page.jsx
+│   │   │   │   └── _components\
+│   │   │   │       └── AlertConfirmation.jsx
+│   │   │   ├── video-start\
+│   │   │   │   └── page.jsx
+│   │   │   ├── completed\
+│   │   │   │   └── page.jsx
+│   │   │   ├── _components\
+│   │   │   │   ├── InterviewHeader.jsx
+│   │   │   │   └── ...
+│   │   │   └── ...
+│   │   └── ...
+│   ├── services\
+│   │   ├── supaBaseclient.js
+│   │   ├── Constants.jsx
+│   │   └── ...
+│   ├── components\
+│   │   ├── ui\
+│   │   │   ├── button.jsx
+│   │   │   ├── input.jsx
+│   │   │   ├── progress.jsx
+│   │   │   ├── sonner.jsx
+│   │   │   └── alert-dialog.jsx
+│   │   └── ...
+│   └── ...
+├── context\
+│   └── InterviewDataContext.js
+├── public\
+│   ├── logo.png
+│   ├── interview.png
+│   └── ...
+├── package.json
+├── next.config.js
+└── ...

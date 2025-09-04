@@ -195,43 +195,58 @@ Questions: ${questionList}
 
     // UI
     return (
-        <div className="p-20 lg:px-48 xl:px=56">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-100 px-2 py-8">
             {showLoading && (
-                <div className="fixed inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
-                    <span className="ml-4 text-lg font-semibold">Processing...</span>
+                <div className="fixed inset-0 bg-white/80 flex flex-col items-center justify-center z-50">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-400"></div>
+                    <span className="ml-4 text-lg font-semibold text-indigo-700 mt-4">Processing...</span>
                 </div>
             )}
-            <h2 className="font-bold text-xl flex justify-between">
-                AI Interview Session
-                <span className="flex items-center gap-2">
-                    <Timer />
-                    {formatTime(secondsElapsed)}
-                </span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5">
-                <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-                    <div className="relative">
-                        {!activeUser && <span className="absolute inset-0 rounded-full bg-blue-500 opacity-75 animate-ping" />}
-                        <Image src="/ai.png" alt="ai" width={100} height={100} className="w-[60px] h-[60px] rounded-full object-cover" />
-                    </div>
-                    <h2>AI Recruiter</h2>
+            <div className="w-full max-w-3xl mx-auto flex flex-col gap-8">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="font-black text-2xl md:text-3xl text-indigo-700 tracking-tight drop-shadow-lg">
+                        <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Interview Room</span>
+                    </h2>
+                    <span className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow border border-indigo-100 font-semibold text-indigo-700 text-base">
+                        <Timer className="w-5 h-5" />
+                        {formatTime(secondsElapsed)}
+                    </span>
                 </div>
-                <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-                    <div className="relative">
-                        {activeUser && <span className="absolute inset-0 rounded-full bg-blue-500 opacity-75 animate-ping" />}
-                        <h2 className="text-2xl bg-primary text-white p-3 rounded-full px-5">{interviewInfo?.userName.charAt(0)}</h2>
+                <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
+                    {/* AI Recruiter Video Box */}
+                    <div className="bg-white/90 rounded-2xl border border-blue-100 shadow-xl flex flex-col items-center justify-center py-8 px-6 w-full md:w-1/2 min-h-[320px] relative">
+                        <div className="absolute top-4 right-4 bg-blue-500 text-white text-xs px-3 py-1 rounded-full shadow">AI Recruiter</div>
+                        <div className="flex flex-col items-center justify-center h-full">
+                            <Image src="/ai.png" alt="ai" width={100} height={100}
+                                className="w-[80px] h-[80px] rounded-full object-cover shadow-lg border-4 border-indigo-100 mb-4" />
+                            <span className="text-lg font-bold text-indigo-700">AI Recruiter</span>
+                            <span className="text-xs text-gray-500 mt-1">Virtual Interviewer</span>
+                        </div>
                     </div>
-                    <h2>{interviewInfo?.userName}</h2>
+                    {/* User Video Box */}
+                    <div className="bg-white/90 rounded-2xl border border-indigo-100 shadow-xl flex flex-col items-center justify-center py-8 px-6 w-full md:w-1/2 min-h-[320px] relative">
+                        <div className="absolute top-4 right-4 bg-indigo-500 text-white text-xs px-3 py-1 rounded-full shadow">You</div>
+                        <div className="flex flex-col items-center justify-center h-full">
+                            <div className="w-[80px] h-[80px] rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg border-4 border-blue-100 mb-4">
+                                <span className="text-3xl text-white font-bold select-none">
+                                    {interviewInfo?.userName?.charAt(0)}
+                                </span>
+                            </div>
+                            <span className="text-lg font-bold text-indigo-700">{interviewInfo?.userName}</span>
+                            <span className="text-xs text-gray-500 mt-1">Participant</span>
+                        </div>
+                    </div>
                 </div>
+                <div className="flex justify-center items-center gap-10 mt-10">
+                    <Mic className="h-14 w-14 p-4 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full cursor-pointer shadow-xl hover:scale-110 transition" />
+                    <AlertConfirmation stopInterview={stopInterview}>
+                        <Phone className="h-14 w-14 p-4 bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-full cursor-pointer shadow-xl hover:scale-110 transition" />
+                    </AlertConfirmation>
+                </div>
+                <h2 className="text-base text-indigo-500 text-center mt-8 font-semibold tracking-wide animate-pulse">
+                    Interview in progress...
+                </h2>
             </div>
-            <div className="flex justify-center items-center gap-5 mt-10">
-                <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
-                <AlertConfirmation stopInterview={stopInterview}>
-                    <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
-                </AlertConfirmation>
-            </div>
-            <h2 className="text-sm text-gray-400 text-center mt-5"> Interview in progress....</h2>
         </div>
     )
 }

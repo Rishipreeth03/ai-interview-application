@@ -12,7 +12,7 @@ import {
   } from "@/components/ui/select"
 import { ArrowRight } from 'lucide-react'
 import { useState } from "react";
-  
+
 const FormContainer = ({onHandleInputChange,GoToNext}) => {
   const [interviewType,setInterviewType]=useState([]);
 
@@ -23,68 +23,81 @@ const FormContainer = ({onHandleInputChange,GoToNext}) => {
   },[interviewType])
 
   return (
-    <div className="p-5 bg-white rounded-xl">
-      <div>
-        <h2 className="text-sm font-medium">Job Position</h2>
-        <Input placeholder="eg. Full Stack Developer" className="mt-2" 
-        onChange={(event)=>onHandleInputChange('jobPosition',event.target.value)}
-        />
-      </div>
-
-      <div className="mt-5">
-        <h2 className="text-sm font-medium">Job Description</h2>
-        <Textarea
-          placeholder="Enter details of the job description"
-          className="h-[200px] mt-2"
-          onChange={(event)=>onHandleInputChange('jobDescription',event.target.value)}
-        />
-      </div>
-
-      <div className="mt-5">
-        <h2 className="text-sm font-medium">Interview Preparation</h2>
-        <Select onValueChange={(value)=>onHandleInputChange('duration',value)}>
-          <SelectTrigger className="w-full mt-2">
-            <SelectValue placeholder="Select Duration" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="5 Min">5 Min</SelectItem>
-            <SelectItem value="15 Min">15 Min</SelectItem>
-            <SelectItem value="30 Min">30 Min</SelectItem>
-            <SelectItem value="45 Min">45 Min</SelectItem>
-            <SelectItem value="60 Min">60 Min</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="mt-5">
-        <h2 className="text-sm font-medium">Interview Type</h2>
-        <div className="flex gap-3 flex-wrap mt-2">
-          {InterviewType.map((type, index) => {
-            const isSelected = interviewType.includes(type.title);
-            return (
-              <div
-                key={index}
-                className={`flex items-center cursor-pointer gap-2 p-2 px-3 rounded-2xl border transition-colors duration-200
-                ${isSelected ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
-                onClick={() =>
-                  setInterviewType(prev =>
-                    isSelected
-                      ? prev.filter(item => item !== type.title)
-                      : [...prev, type.title]
-                  )
-                }
-              >
-                <type.icon className={`h-4 w-4 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
-                <span className="text-sm font-medium">{type.title}</span>
-              </div>
-            );
-          })}
+    <div className="p-8 bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Interview</h2>
+      <div className="space-y-6">
+        {/* Job Position */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Job Position</label>
+          <Input 
+            placeholder="e.g. Full Stack Developer" 
+            className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+            onChange={(event)=>onHandleInputChange('jobPosition',event.target.value)}
+          />
         </div>
-
-      </div>
-          <div className='mt-7 flex justify-end'>
-          <Button onClick={GoToNext} >Generate Question<ArrowRight/></Button>
+        {/* Job Description */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Job Description</label>
+          <Textarea
+            placeholder="Enter details of the job description"
+            className="h-[120px] mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+            onChange={(event)=>onHandleInputChange('jobDescription',event.target.value)}
+          />
+        </div>
+        {/* Interview Preparation */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Interview Duration</label>
+          <Select onValueChange={(value)=>onHandleInputChange('duration',value)}>
+            <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition">
+              <SelectValue placeholder="Select Duration" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5 Min">5 Min</SelectItem>
+              <SelectItem value="15 Min">15 Min</SelectItem>
+              <SelectItem value="30 Min">30 Min</SelectItem>
+              <SelectItem value="45 Min">45 Min</SelectItem>
+              <SelectItem value="60 Min">60 Min</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Interview Type */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Interview Type</label>
+          <div className="flex gap-3 flex-wrap mt-1">
+            {InterviewType.map((type, index) => {
+              const isSelected = interviewType.includes(type.title);
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center cursor-pointer gap-2 p-2 px-4 rounded-2xl border transition-colors duration-200
+                  ${isSelected ? 'bg-blue-100 text-blue-700 border-blue-300 shadow' : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-blue-50'}`}
+                  onClick={() =>
+                    setInterviewType(prev =>
+                      isSelected
+                        ? prev.filter(item => item !== type.title)
+                        : [...prev, type.title]
+                    )
+                  }
+                >
+                  <type.icon className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className="text-sm font-medium">{type.title}</span>
+                </div>
+              );
+            })}
           </div>
+        </div>
+        {/* Divider */}
+        <hr className="my-4 border-gray-200" />
+        {/* Generate Button */}
+        <div className='flex justify-end'>
+          <Button 
+            onClick={GoToNext} 
+            className="flex gap-2 items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow transition"
+          >
+            Generate Questions <ArrowRight/>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

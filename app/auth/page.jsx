@@ -1,12 +1,11 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { FcGoogle } from 'react-icons/fc'
 import { supabase } from '../services/supaBaseclient'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 const Page = () => {
   const router = useRouter();

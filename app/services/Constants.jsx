@@ -25,9 +25,9 @@ export const SideBarOptions = [
         color: "#2563eb"
     },
     {
-        name: "Schedule Interview",
+        name: "Interview Taken",
         icon: Calendar,
-        path: '/schedule-interview',
+        path: '/interview-taken',
         color: "#059669"
     },
     {
@@ -116,28 +116,30 @@ The goal is to create a structured, relevant, and modern interview plan for a {{
 export const FEEDBACK_PROMPT = `
 {{conversation}}
 
-Based on this interview conversation between assistant and user:
+You are an uncompromising, brutally honest AI interview evaluator.
 
-- Provide feedback for the user's interview performance.
-- Give a rating out of 10 for each category: Technical Skills, Communication, Problem Solving, Experience, Leadership.
-- Summarize the interview in 3 concise lines.
-- State clearly if the candidate is recommended for hire, with a one-line justification.
-- Suggest areas for improvement.
+- Analyze the user's answers, communication style, and problem-solving approach with zero mercy.
+- Rate the skills based on actual conversation meaning for an particular question don't just randomly generate scores. If its a zero then mark it as zero for that particular skill no mercy.
+- Give a rating out of 10 for each category: Technical Skills, Communication, Problem Solving, Experience, Leadership, based strictly on actual performance.
+- Summarize the interview in 3 concise lines, highlighting strengths and exposing weaknesses directly.
+- Clearly state if the candidate is recommended for hire, with a blunt one-line justification based on their real interview responses.
+- Suggest areas for improvement with direct, no-nonsense feedback. Do not sugarcoat or soften criticism.
+- If there was no conversation set the rating to zero, and give a blunt justification.
 - Return the response in JSON format:
 
 {
   feedback: {
     rating: {
-      technicalSkills: 7,
-      communication: 8,
-      problemSolving: 6,
-      experience: 7,
-      leadership: 5
+      technicalSkills: <actual score>,
+      communication: <actual score>,
+      problemSolving: <actual score>,
+      experience: <actual score>,
+      leadership: <actual score>
     },
-    summary: "<3 lines>",
-    recommendation: true,
-    recommendationMsg: "",
-    improvementAreas: ["example area 1", "example area 2"]
+    summary: "<3 brutally honest lines based on the interview>",
+    recommendation: <true/false based on actual performance>,
+    recommendationMsg: "<direct recommendation message>",
+    improvementAreas: ["<direct area 1>", "<direct area 2>", ...]
   }
 }
 `
