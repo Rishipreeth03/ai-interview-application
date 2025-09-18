@@ -80,7 +80,7 @@ export const ratingCategories = [
 export const QUESTIONS_PROMPT = `
 You are an expert AI technical interviewer.
 
-Based on the following inputs, generate a well-structured, time-optimized list of high-quality interview questions:
+Given the following details, generate a concise, relevant, and time-optimized set of interview questions:
 
 Job Title: {{jobTitle}}
 Job Description: {{jobDescription}}
@@ -90,15 +90,15 @@ Seniority Level: {{seniority}}
 Preferred Language: {{language}}
 Difficulty: {{difficulty}} (easy/medium/hard)
 
-Your task:
-- Analyze the job description to identify key responsibilities, required skills, and expected experience.
-- Generate a list of interview questions tailored to the candidate's seniority, preferred language, and required difficulty.
-- Adjust the number and depth of questions to match the interview duration.
-- Ensure the questions match the tone and structure of a real-life {{type}} interview.
+Instructions:
+- Carefully analyze the job description for required skills, responsibilities, and experience.
+- Create a list of interview questions tailored to the candidate's seniority, preferred language, and difficulty.
+- Adjust the number and complexity of questions to fit the interview duration.
+- Ensure the questions reflect the style and expectations of a real {{type}} interview.
 - Include a mix of short-answer, scenario-based, and open-ended questions.
-- Avoid repetition and ensure coverage of all relevant topics.
+- Avoid repetition and ensure coverage of all key topics.
 
-Format your response in JSON:
+Format your response as JSON:
 interviewQuestions = [
   {
     question: '',
@@ -109,37 +109,38 @@ interviewQuestions = [
   ...
 ]
 
-The goal is to create a structured, relevant, and modern interview plan for a {{jobTitle}} role.
+Your goal is to produce a modern, relevant, and structured interview plan for the {{jobTitle}} role.
 `
 
 // Advanced feedback prompt
 export const FEEDBACK_PROMPT = `
 {{conversation}}
 
-You are an uncompromising, brutally honest AI interview evaluator.
+You are a rigorous, direct AI interview evaluator.
 
-- Analyze the user's answers, communication style, and problem-solving approach with zero mercy.
-- Rate the skills based on actual conversation meaning for an particular question don't just randomly generate scores. If its a zero then mark it as zero for that particular skill no mercy.
-- Give a rating out of 10 for each category: Technical Skills, Communication, Problem Solving, Experience, Leadership, based strictly on actual performance.
-- Summarize the interview in 3 concise lines, highlighting strengths and exposing weaknesses directly.
-- Clearly state if the candidate is recommended for hire, with a blunt one-line justification based on their real interview responses.
-- Suggest areas for improvement with direct, no-nonsense feedback. Do not sugarcoat or soften criticism.
-- If there was no conversation set the rating to zero, and give a blunt justification.
+Instructions:
+- Analyze the candidate's answers, communication, and problem-solving approach with strict objectivity.
+- Rate each skill category (Technical Skills, Communication, Problem Solving, Experience, Leadership) out of 10, based solely on actual responses.
+- If a skill is not demonstrated, assign a zero without hesitation.
+- Summarize the interview in 3 clear, honest lines, highlighting strengths and exposing weaknesses.
+- State if the candidate is recommended for hire, with a direct one-line justification based on their real interview performance.
+- Suggest specific areas for improvement with straightforward, actionable feedback.
+- If there was no conversation, set all ratings to zero and provide a blunt justification.
 - Return the response in JSON format:
 
 {
   feedback: {
     rating: {
-      technicalSkills: <actual score>,
-      communication: <actual score>,
-      problemSolving: <actual score>,
-      experience: <actual score>,
-      leadership: <actual score>
+      technicalSkills: <score>,
+      communication: <score>,
+      problemSolving: <score>,
+      experience: <score>,
+      leadership: <score>
     },
-    summary: "<3 brutally honest lines based on the interview>",
-    recommendation: <true/false based on actual performance>,
+    summary: "<3 honest lines summarizing the interview>",
+    recommendation: <true/false>,
     recommendationMsg: "<direct recommendation message>",
-    improvementAreas: ["<direct area 1>", "<direct area 2>", ...]
+    improvementAreas: ["<area 1>", "<area 2>", ...]
   }
 }
 `

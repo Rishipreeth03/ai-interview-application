@@ -137,6 +137,46 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* Modern, minimal, slightly invisible custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.18); /* Indigo-500, low opacity */
+  border-radius: 12px;
+  border: none;
+  min-height: 40px;
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.32);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 12px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hide scrollbar arrows (for browsers that support it) */
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.18) transparent;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
