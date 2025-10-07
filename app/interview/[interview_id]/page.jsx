@@ -86,6 +86,7 @@ function Interview() {
                 loading={loading}
                 onJoinInterview={onJoinInterview}
                 emailDisabled={true}
+                interviewStatus={interviewData?.status}
               />
               <InterviewInfo />
             </motion.div>

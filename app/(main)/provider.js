@@ -2,7 +2,6 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import React, { useEffect, useState } from 'react'
 import AppSidebar from './_components/AppSidebar'
-import WelcomeContainer from './dashboard/_components/WelcomeContainer'
 import { supabase } from '@/app/services/supaBaseclient'
 import { useRouter } from 'next/navigation'
 
@@ -45,8 +44,7 @@ function DashboardProvider({ children }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <div className='w-full p-10'>
-        <WelcomeContainer />
+      <div className='w-full'>
         {children}
       </div>
     </SidebarProvider>

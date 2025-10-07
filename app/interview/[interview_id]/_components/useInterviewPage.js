@@ -17,7 +17,7 @@ function useInterviewPage(interview_id, setInterviewInfo, router) {
   const onJoinInterview = async () => {
     setLoading(true)
     let { data: interviews, error } = await supabase
-      .from('interviews')
+      .from('"interviews"')
       .select('*')
       .eq('interview_id', interview_id)
 
@@ -34,7 +34,7 @@ function useInterviewPage(interview_id, setInterviewInfo, router) {
     setLoading(true)
     try {
       let { data: interviews, error } = await supabase
-        .from('interviews')
+        .from('"interviews"')
         .select("jobPosition,jobDescription,duration,type")
         .eq('interview_id', interview_id)
       setInterviewData(interviews[0])

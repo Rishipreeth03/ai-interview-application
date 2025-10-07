@@ -10,15 +10,20 @@ import {
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select"
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Calendar } from 'lucide-react'
 import { useState } from "react";
+import DateTimePicker from './DateTimePicker';
 
 const FormContainer = ({onHandleInputChange,GoToNext}) => {
   const [interviewType,setInterviewType]=useState([]);
 
   useEffect(()=>{
-      if(interviewType){
-        onHandleInputChange('type',interviewType)
+      if(interviewType && interviewType.length > 0){
+        console.log("Setting interview type:", interviewType);
+        onHandleInputChange('type', interviewType);
+      } else if(interviewType && interviewType.length === 0) {
+        // If all types are deselected, set to null or empty array
+        onHandleInputChange('type', []);
       }
   },[interviewType])
 
@@ -86,6 +91,53 @@ const FormContainer = ({onHandleInputChange,GoToNext}) => {
             })}
           </div>
         </div>
+        
+        {/* Difficulty Level */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Difficulty Level</label>
+          <Select onValueChange={(value)=>onHandleInputChange('difficulty_level',value)} defaultValue="medium">
+            <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition">
+              <SelectValue placeholder="Select Difficulty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            This will affect the complexity of questions generated for the interview.
+          </p>
+        </div>
+
+        {/* Interview Schedule */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-blue-500" />
+            <label className="block text-sm font-semibold text-gray-700">Interview Schedule</label>
+          </div>
+          
+          {/* Start Time */}
+          <div className="mb-4">
+            <DateTimePicker 
+              label="Start Time"
+              value={null} // Let component use default value
+              onChange={(value) => onHandleInputChange('start_at', value)}
+              hint="When the interview becomes available to candidates"
+            />
+          </div>
+          
+          {/* End Time */}
+          <div>
+            <DateTimePicker 
+              label="End Time"
+              value={null} // Let component use default value
+              onChange={(value) => onHandleInputChange('end_at', value)}
+              hint="When the interview will close (must be after start time)"
+            />
+          </div>
+        </div>
+        
         {/* Divider */}
         <hr className="my-4 border-gray-200" />
         {/* Generate Button */}

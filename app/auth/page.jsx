@@ -1,8 +1,9 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../services/supaBaseclient'
+import { toast } from 'sonner'
 import AuthLogo from './_components/AuthLogo'
 import AuthIllustration from './_components/AuthIllustration'
 import AuthHeading from './_components/AuthHeading'
@@ -10,23 +11,57 @@ import GoogleButton from './_components/GoogleButton'
 
 const Page = () => {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error } = await supabase.auth.getSession()
       if (session) {
         router.push('/dashboard')
       }
     }
+    
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          router.push('/dashboard')
+        }
+      }
+    )
+    
     checkAuthStatus()
+    
+    // Clean up listener
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
   }, [router])
 
   const signinWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    })
-    if (!error) {
-      console.error("Error")
+    try {
+      setIsLoading(true)
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+          // Request additional scopes to get profile info
+          scopes: 'email profile',
+        }
+      })
+      
+      if (error) {
+        console.error("Authentication error:", error.message)
+        toast.error("Failed to sign in with Google. Please try again.")
+        throw error
+      }
+      
+      // OAuth redirect happens automatically
+    } catch (err) {
+      console.error("Sign in failed:", err)
+      toast.error("Authentication failed. Please try again later.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -48,7 +83,7 @@ const Page = () => {
           <AuthLogo />
           <AuthIllustration />
           <AuthHeading />
-          <GoogleButton onClick={signinWithGoogle} />
+          <GoogleButton onClick={signinWithGoogle} isLoading={isLoading} />
           <div className="mt-4 text-xs text-white/70 text-center">
             Powered by Smart Persona &mdash; Secure, private, and fast.
           </div>

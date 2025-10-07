@@ -25,12 +25,6 @@ export const SideBarOptions = [
         color: "#2563eb"
     },
     {
-        name: "Interview Taken",
-        icon: Calendar,
-        path: '/interview-taken',
-        color: "#059669"
-    },
-    {
         name: "All Interviews",
         icon: List,
         path: '/all-interview',
@@ -98,16 +92,17 @@ Instructions:
 - Include a mix of short-answer, scenario-based, and open-ended questions.
 - Avoid repetition and ensure coverage of all key topics.
 
-Format your response as JSON:
-interviewQuestions = [
-  {
-    question: '',
-    type: 'Technical/Behavioral/Experience/Problem Solving/Leadership/System Design/Knowledge',
-    difficulty: 'easy/medium/hard',
-    language: '{{language}}'
-  },
-  ...
-]
+Return your response as valid JSON in this format (exactly as shown):
+{
+  "interviewQuestions": [
+    {
+      "question": "Question text goes here?",
+      "type": "Technical/Behavioral/Experience/Problem Solving/Leadership/System Design/Knowledge",
+      "difficulty": "easy/medium/hard",
+      "language": "{{language}}"
+    }
+  ]
+}
 
 Your goal is to produce a modern, relevant, and structured interview plan for the {{jobTitle}} role.
 `

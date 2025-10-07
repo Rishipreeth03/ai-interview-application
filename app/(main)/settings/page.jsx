@@ -8,23 +8,29 @@ import ProfileCard from "./_components/ProfileCard";
 
 export default function SettingsPage() {
   const {
-    name,
-    email,
+    userData,
     loading,
     error,
     success,
+    saving,
+    updateProfile
   } = useSettingsPage();
 
   return (
     <motion.main
-      className="max-w-xl mx-auto py-10 px-4"
+      className="max-w-3xl mx-auto py-10 px-4"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <SettingsHeader />
       <FeedbackAlert error={error} success={success} />
-      <ProfileCard name={name} email={email} loading={loading} />
+      <ProfileCard 
+        userData={userData}
+        loading={loading}
+        saving={saving}
+        onUpdateProfile={updateProfile}
+      />
     </motion.main>
   );
 }

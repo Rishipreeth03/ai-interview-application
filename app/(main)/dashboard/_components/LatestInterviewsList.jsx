@@ -14,8 +14,11 @@ const LatestInterviewsList = () => {
     const { user } = useUser();
 
     useEffect(() => {
-        GetInterviewList();
-    }, [user]);
+        // Only fetch if user is available
+        if (user?.email) {
+            GetInterviewList();
+        }
+    }, [user, user?.email]); // Add user.email to dependencies to ensure it refreshes when email changes
 
     const GetInterviewList = async () => {
         let { data: Interviews, error } = await supabase

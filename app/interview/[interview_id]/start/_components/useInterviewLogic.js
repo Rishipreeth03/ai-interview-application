@@ -165,7 +165,7 @@ Questions: ${questionList}
         const Content = result?.data?.content
         const FINAL_CONTENT = Content.replace('```json', '').replace('```', '')
         await supabase
-            .from('interview-feedback')
+            .from('"interview-feedback"')
             .insert([{
                 userName: interviewInfo?.userName,
                 userEmail: interviewInfo?.userEmail,
@@ -207,7 +207,7 @@ Questions: ${questionList}
      */
     async function hasCandidateCompletedInterview(userEmail, interview_id) {
         const { data, error } = await supabase
-            .from('interview-feedback')
+            .from('"interview-feedback"')
             .select('id')
             .eq('userEmail', userEmail)
             .eq('interview_id', interview_id)

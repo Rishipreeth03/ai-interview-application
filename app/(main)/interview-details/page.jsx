@@ -1,37 +1,26 @@
 'use client'
-import React from "react"
-import InterviewDetailsHeader from "./_components/InterviewDetailsHeader"
-import InterviewDetailsCard from "./_components/InterviewDetailsCard"
-import useInterviewDetailsPage from "./_components/useInterviewDetailsPage"
+import React, { useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function InterviewDetailsPage() {
-  const {
-    interview,
-    loading,
-    url,
-    copyLink,
-    sendGmail,
-    sendWhatsApp,
-  } = useInterviewDetailsPage()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const interviewId = searchParams.get("id")
+  
+  useEffect(() => {
+    // If we have an id in the query params, redirect to the new dynamic route
+    if (interviewId) {
+      router.replace(`/interview-details/${interviewId}`)
+    } else {
+      // If no id, redirect to the interviews list
+      router.replace('/all-interview')
+    }
+  }, [interviewId, router])
 
+  // Return a loading state while redirecting
   return (
-    <main className="max-w-2xl mx-auto py-10 px-4">
-      <InterviewDetailsHeader />
-      {loading ? (
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="animate-spin w-8 h-8 text-indigo-500" />
-        </div>
-      ) : !interview ? (
-        <div className="text-center text-gray-500 py-10">Interview not found.</div>
-      ) : (
-        <InterviewDetailsCard
-          interview={interview}
-          url={url}
-          copyLink={copyLink}
-          sendGmail={sendGmail}
-          sendWhatsApp={sendWhatsApp}
-        />
-      )}
-    </main>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-pulse text-gray-500">Redirecting...</div>
+    </div>
   )
 }

@@ -1,17 +1,30 @@
 import React from 'react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Clock, Copy, Mail, Plus, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Clock, Copy, Mail, Plus, MessageCircle, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import moment from 'moment'
 
 function InterviewLink({ interviewId, formData }) {
-    const url = process.env.NEXT_PUBLIC_HOST_URL + '/' + interviewId
+    // Use window.location to construct a proper URL that will work in all environments
+    const baseUrl = typeof window !== 'undefined' ? 
+        `${window.location.protocol}//${window.location.host}` : 
+        process.env.NEXT_PUBLIC_HOST_URL || '';
+    
+    const url = `${baseUrl}/interview/${interviewId}`
+    console.log("Generated interview URL:", url);
+    
     const GetInterviewUrl = () => url
 
     const interviewTitle = formData?.jobPosition || "Interview Opportunity"
     const interviewDuration = formData?.duration || "30 mins"
+    
+    // Format dates for display
+    const startDate = formData?.start_at ? moment(formData.start_at).format('MMM DD, YYYY [at] h:mm A') : "Not specified"
+    const endDate = formData?.end_at ? moment(formData.end_at).format('MMM DD, YYYY [at] h:mm A') : "Not specified"
+    const isScheduled = formData?.start_at && formData?.end_at
 
     const onCopyLink = async () => {
         await navigator.clipboard.writeText(url)
@@ -19,9 +32,16 @@ function InterviewLink({ interviewId, formData }) {
     }
 
     const onShareWhatsapp = () => {
+        // Include scheduling information if available
+        let scheduleInfo = '';
+        if (isScheduled) {
+            scheduleInfo = `Available from ${startDate} to ${endDate}\n\n`;
+        }
+        
         const message = encodeURIComponent(
             `You are invited to an AI-powered interview for the position of "${interviewTitle}".\n\n` +
             `Interview Duration: ${interviewDuration}\n\n` +
+            scheduleInfo +
             `Click the link below to start your interview:\n${url}\n\n` +
             `Best of luck.`
         )
@@ -30,10 +50,18 @@ function InterviewLink({ interviewId, formData }) {
 
     const onShareEmail = () => {
         const subject = encodeURIComponent('Invitation: AI Interview for ' + interviewTitle)
+        
+        // Include scheduling information if available
+        let scheduleInfo = '';
+        if (isScheduled) {
+            scheduleInfo = `Interview Availability: From ${startDate} to ${endDate}\n\n`;
+        }
+        
         const body = encodeURIComponent(
             `Hello,\n\n` +
             `You are invited to an AI-powered interview for the position of "${interviewTitle}".\n\n` +
             `Interview Duration: ${interviewDuration}\n\n` +
+            scheduleInfo +
             `Please click the link below to begin your interview:\n${url}\n\n` +
             `Best regards,\nAI Recruiter Team`
         )
@@ -73,9 +101,18 @@ function InterviewLink({ interviewId, formData }) {
                                     <Copy className="w-4 h-4" /> Copy
                                 </Button>
                             </div>
-                            <div className='mt-2 flex items-center gap-2 text-gray-400 text-xs'>
-                                <Clock className='h-4 w-4' /> 
-                                <span>{interviewDuration} Duration</span>
+                            <div className='mt-2 space-y-1'>
+                                <div className='flex items-center gap-2 text-gray-500 text-xs'>
+                                    <Clock className='h-4 w-4' /> 
+                                    <span>{interviewDuration} Duration</span>
+                                </div>
+                                
+                                {isScheduled && (
+                                    <div className='flex items-center gap-2 text-gray-500 text-xs'>
+                                        <Calendar className='h-4 w-4' />
+                                        <span>Available from {startDate} to {endDate}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -112,7 +149,7 @@ function InterviewLink({ interviewId, formData }) {
                                 <ArrowLeft /> Dashboard
                             </Button>
                         </Link>
-                        <Link href={'/create-interview'} className="w-1/2">
+                        <Link href={'/dashboard/create-interview'} className="w-1/2">
                             <Button className="flex gap-2 items-center w-full bg-primary hover:bg-primary/90 text-white transition">
                                 <Plus /> New Interview
                             </Button>
