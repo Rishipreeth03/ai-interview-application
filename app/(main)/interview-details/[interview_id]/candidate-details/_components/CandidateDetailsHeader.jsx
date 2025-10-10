@@ -28,7 +28,7 @@ export default function CandidateDetailsHeader({ interviewData, isLoading }) {
       
       <Link 
         href={`/interview-details/${interviewData?.interview_id || ''}`}
-        className="flex items-center text-blue-600 hover:text-blue-800 transition-colors mb-5 group bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-200 w-fit"
+        className="flex items-center text-blue-600 hover:text-blue-800 mb-5 group bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-200 w-fit"
       >
         <ChevronLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform duration-200" />
         <span className="font-medium">Back to Interview Details</span>
