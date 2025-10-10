@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { 
   Clock, Calendar, Video, Mic, 
   Briefcase, FileText, Tag,
-  BarChart3, Info, Users
+  BarChart3, Info, Users, ChevronDown, ChevronUp
 } from "lucide-react";
 import moment from "moment";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,15 @@ export const InfoSection = ({ title, icon, children, className = "" }) => {
   return (
     <div className={`p-4 bg-gray-50 rounded-xl border border-gray-200 ${className}`}>
       <h3 className="font-semibold text-gray-900 flex items-center gap-1.5 mb-2">
-        {icon}
-        {title}
+        {/* Support both string titles and component titles */}
+        {typeof title === 'string' ? (
+          <>
+            {icon}
+            {title}
+          </>
+        ) : (
+          title
+        )}
       </h3>
       {children}
     </div>
@@ -240,40 +248,108 @@ export const JobTitleAndTags = ({ interview }) => {
 };
 
 // Job Description component
-export const JobDescription = ({ interview }) => (
-  <InfoSection 
-    title="Job Description"
-    icon={<FileText className="w-4 h-4 text-indigo-600" />}
-    className="mb-4"
-  >
-    <p className="text-gray-700 text-sm leading-relaxed">
-      {interview?.jobDescription || "No description provided"}
-    </p>
-  </InfoSection>
-);
+export const JobDescription = ({ interview }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const jobDescription = interview?.jobDescription || "No description provided";
+  const isLongDescription = jobDescription.length > 300;
+
+  return (
+    <InfoSection 
+      title="Job Description"
+      icon={<FileText className="w-4 h-4 text-indigo-600" />}
+      className="mb-4"
+    >
+      <div className="text-gray-700 text-sm leading-relaxed">
+        {isLongDescription && !isExpanded ? (
+          <>
+            <p>{jobDescription.substring(0, 300)}...</p>
+            <button 
+              onClick={() => setIsExpanded(true)}
+              className="text-indigo-600 hover:text-indigo-800 text-xs mt-2 font-medium focus:outline-none flex items-center gap-1"
+            >
+              Show more <ChevronDown className="h-3 w-3" />
+            </button>
+          </>
+        ) : (
+          <>
+            <p>{jobDescription}</p>
+            {isLongDescription && isExpanded && (
+              <button 
+                onClick={() => setIsExpanded(false)}
+                className="text-indigo-600 hover:text-indigo-800 text-xs mt-2 font-medium focus:outline-none flex items-center gap-1"
+              >
+                Show less <ChevronUp className="h-3 w-3" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </InfoSection>
+  );
+};
 
 // Schedule Information component
-export const ScheduleInfo = ({ interview }) => {
+export const ScheduleInfo = ({ interview, onEditSchedule }) => {
   const hasSchedule = interview?.start_at && interview?.end_at;
   const startDate = hasSchedule ? moment(interview.start_at).format('MMM DD, YYYY h:mm A') : null;
   const endDate = hasSchedule ? moment(interview.end_at).format('MMM DD, YYYY h:mm A') : null;
   
-  if (!hasSchedule) return null;
+  if (!hasSchedule && !onEditSchedule) return null;
+  
+  // Determine if interview can be edited (not started or ended)
+  const canEdit = onEditSchedule && interview?.status !== 'Started' && interview?.status !== 'Ended';
   
   return (
     <InfoSection 
-      title="Interview Schedule"
-      icon={<Calendar className="w-4 h-4 text-blue-600" />}
+      title={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span>Interview Settings</span>
+          </div>
+          
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEditSchedule(interview)}
+              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              Edit Settings
+            </Button>
+          )}
+        </div>
+      }
       className="mb-4"
     >
       <div className="text-sm space-y-2">
+        {hasSchedule ? (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-700 min-w-[80px]">Start:</span>
+              <span className="text-blue-700">{startDate}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-700 min-w-[80px]">End:</span>
+              <span className="text-blue-700">{endDate}</span>
+            </div>
+          </>
+        ) : (
+          <div className="text-gray-500 italic">No schedule set</div>
+        )}
+        
+        {/* New Fields */}
         <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-700 min-w-[50px]">Start:</span>
-          <span className="text-blue-700">{startDate}</span>
+          <span className="font-medium text-gray-700 min-w-[80px]">Access Type:</span>
+          <span className="text-blue-700 capitalize">
+            {interview?.interview_type || 'Private'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-700 min-w-[50px]">End:</span>
-          <span className="text-blue-700">{endDate}</span>
+          <span className="font-medium text-gray-700 min-w-[80px]">Available Slots:</span>
+          <span className="text-blue-700">
+            {interview?.number_of_interviews || 1}
+          </span>
         </div>
       </div>
     </InfoSection>

@@ -1,0 +1,13 @@
+{
+  "provider": "mux",
+  "mux": {
+    "tokenId": "${process.env.MUX_TOKEN_ID}",
+    "tokenSecret": "${process.env.MUX_TOKEN_SECRET}",
+    "uploadStorageId": "${process.env.MUX_SIGNING_KEY}",
+    "uploadStorageSecret": "${process.env.MUX_PRIVATE_KEY}"
+  },
+  "outputDirectory": "videos",
+  "poster": {
+    "generate": true
+  }
+}

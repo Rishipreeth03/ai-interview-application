@@ -9,6 +9,7 @@ import {
   Save,
   AlertTriangle
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { 
   Dialog,
   DialogContent,
@@ -248,18 +249,37 @@ export default function InterviewQuestionsList({ interview, refreshInterview, is
   }
 
   return (
-    <div className="w-full mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800">Interview Questions</h2>
-          {isDisabled && (
-            <p className="text-amber-600 text-xs mt-1 flex items-center">
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              {interview?.status === 'Started' 
-                ? 'Interview in progress - Questions cannot be modified' 
-                : 'Interview has ended - Questions cannot be modified'}
-            </p>
-          )}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="w-full mt-8"
+    >
+      {/* Decorative elements */}
+      <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-purple-600 opacity-10"></div>
+      <div className="absolute -bottom-4 -left-4 w-10 h-10 rounded-full bg-indigo-600 opacity-10"></div>
+        
+      {/* Card header with gradient background */}
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-4 md:p-5 rounded-t-xl flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">Interview Questions</h2>
+            {isDisabled && (
+              <p className="text-white/80 text-xs mt-1 flex items-center">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {interview?.status === 'Started' 
+                  ? 'Interview in progress - Questions locked' 
+                  : 'Interview has ended - Questions locked'}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <TooltipProvider>
@@ -267,8 +287,8 @@ export default function InterviewQuestionsList({ interview, refreshInterview, is
               <TooltipTrigger asChild>
                 <div>
                   <Button 
-                    variant="outline" 
-                    className={`flex items-center gap-1 ${isDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    variant="outline"
+                    className={`bg-white/20 text-white border-white/30 hover:bg-white/30 flex items-center gap-1 ${isDisabled ? 'cursor-not-allowed opacity-70' : ''}`}
                     onClick={handleAddNewQuestion}
                     disabled={isLoading || isRegenerating || isDisabled}
                   >
@@ -321,23 +341,40 @@ export default function InterviewQuestionsList({ interview, refreshInterview, is
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border shadow">
+      <div className="bg-white/95 backdrop-blur-sm rounded-b-xl border border-indigo-100 shadow-lg overflow-hidden">
         {questions.length === 0 ? (
-          <div className="p-6 text-center">
-            <p className="text-gray-500">No questions available. Click "Regenerate Questions" to create new ones.</p>
+          <div className="p-10 text-center bg-gradient-to-r from-gray-50 to-gray-100">
+            <div className="mb-4 p-3 bg-white rounded-full w-16 h-16 mx-auto flex items-center justify-center shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </div>
+            <p className="text-gray-600 font-medium">No questions available.</p>
+            <p className="text-gray-500 text-sm mt-1">Use the AI generator to create interview questions automatically.</p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-indigo-100">
             {questions.map((question, index) => (
-              <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex justify-between items-start">
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="p-5 hover:bg-indigo-50/50 transition-all"
+              >
+                <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">
-                      {index + 1}. {question.question}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-indigo-100 text-indigo-700 h-6 w-6 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                        {index + 1}
+                      </div>
+                      <p className="font-medium text-gray-800">
+                        {question.question}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 ml-9">
                       {question.type && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-2.5 py-0.5 text-xs font-medium rounded-full">
                           {question.type}
                         </Badge>
                       )}
@@ -394,7 +431,7 @@ export default function InterviewQuestionsList({ interview, refreshInterview, is
                     </TooltipProvider>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -490,6 +527,6 @@ export default function InterviewQuestionsList({ interview, refreshInterview, is
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   )
 }

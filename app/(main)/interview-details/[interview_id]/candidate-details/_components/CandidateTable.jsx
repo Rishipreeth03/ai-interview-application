@@ -1,5 +1,6 @@
 
 import { useState, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { 
   Table, 
   TableBody, 
@@ -21,7 +22,8 @@ import {
   Search,
   RefreshCw,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  Calendar
 } from 'lucide-react'
 import AddCandidatesDialog from './AddCandidatesDialog'
 import Link from 'next/link'
@@ -111,7 +113,7 @@ export default function CandidateTable({ candidates, isLoading: externalIsLoadin
   const getStatusBadge = (status, isCompleted) => {
     if (!isCompleted) {
       return (
-        <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200">
+        <Badge variant="outline" className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-200 font-medium px-3 py-1 rounded-full shadow-sm">
           Not Started
         </Badge>
       )
@@ -120,29 +122,38 @@ export default function CandidateTable({ candidates, isLoading: externalIsLoadin
     switch(status?.toLowerCase()) {
       case 'approved':
         return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            Approved
+          <Badge className="bg-gradient-to-r from-green-50 to-green-100 text-green-800 border-green-200 font-medium px-3 py-1 rounded-full shadow-sm">
+            <div className="flex items-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></div>
+              Approved
+            </div>
           </Badge>
         )
       case 'rejected':
         return (
-          <Badge className="bg-red-100 text-red-800 border-red-200">
-            Rejected
+          <Badge className="bg-gradient-to-r from-red-50 to-red-100 text-red-800 border-red-200 font-medium px-3 py-1 rounded-full shadow-sm">
+            <div className="flex items-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></div>
+              Rejected
+            </div>
           </Badge>
         )
       case 'pending':
       default:
         return (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-            Pending Review
+          <Badge className="bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 border-amber-200 font-medium px-3 py-1 rounded-full shadow-sm">
+            <div className="flex items-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></div>
+              Pending Review
+            </div>
           </Badge>
         )
     }
   }
 
   const getInterviewUrl = (candidateId, userName, userEmail) => {
-    // Create an interview link with pre-filled candidate information
-    return `/interview/${interviewId}?name=${encodeURIComponent(userName || '')}&email=${encodeURIComponent(userEmail || '')}`
+    // Create an interview link with pre-filled candidate information and candidate_id
+    return `/interview/${interviewId}?candidate_id=${encodeURIComponent(candidateId)}&name=${encodeURIComponent(userName || '')}&email=${encodeURIComponent(userEmail || '')}`
   }
 
   // Loading skeleton
@@ -169,43 +180,72 @@ export default function CandidateTable({ candidates, isLoading: externalIsLoadin
 
   return (
     <div className="w-full" key={refreshKey}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search candidates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 rounded-lg"
-          />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Input
+              placeholder="Search candidates by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 py-5 rounded-full border-indigo-100 focus-visible:ring-indigo-400 shadow-sm bg-white/80 backdrop-blur-sm"
+            />
+          </motion.div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="default" 
-            onClick={() => setIsAddCandidatesDialogOpen(true)} 
-            className={`flex items-center gap-1 ${
-              interviewStatus === 'Started' || interviewStatus === 'Ended'
-                ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-            }`}
-            disabled={interviewStatus === 'Started' || interviewStatus === 'Ended'}
-            title={
-              interviewStatus === 'Started'
-                ? 'Cannot add candidates while interview is in progress'
-                : interviewStatus === 'Ended'
-                ? 'Cannot add candidates after interview has ended'
-                : 'Add new candidates'
-            }
+        <div className="flex items-center gap-3">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <UserPlus className="h-4 w-4" />
-            Add Candidates
-          </Button>
+            <Button 
+              variant="default" 
+              onClick={() => setIsAddCandidatesDialogOpen(true)} 
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full ${
+                interviewStatus === 'Started' || interviewStatus === 'Ended'
+                  ? 'bg-gray-300/70 hover:bg-gray-300/70 cursor-not-allowed border border-gray-300'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-[0_0_15px_rgba(79,70,229,0.2)] hover:shadow-[0_0_25px_rgba(79,70,229,0.35)]'
+              }`}
+              disabled={interviewStatus === 'Started' || interviewStatus === 'Ended'}
+              title={
+                interviewStatus === 'Started'
+                  ? 'Cannot add candidates while interview is in progress'
+                  : interviewStatus === 'Ended'
+                  ? 'Cannot add candidates after interview has ended'
+                  : 'Add new candidates'
+              }
+            >
+              <UserPlus className="h-4 w-4" />
+              Add Candidates
+              {(interviewStatus === 'Started' || interviewStatus === 'Ended') && (
+                <span className="ml-1 bg-gray-400/20 text-white/90 text-xs py-0.5 px-2 rounded-full">Disabled</span>
+              )}
+            </Button>
+          </motion.div>
           
-          <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-1">
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh} 
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border-indigo-200 bg-white hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              <RefreshCw className={`h-4 w-4 ${localIsLoading ? 'animate-spin text-indigo-600' : ''}`} />
+              {localIsLoading ? 'Refreshing...' : 'Refresh List'}
+            </Button>
+          </motion.div>
         </div>
       </div>
       
@@ -218,126 +258,201 @@ export default function CandidateTable({ candidates, isLoading: externalIsLoadin
       />
 
       {filteredCandidates.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No candidates found</h3>
-          <p className="text-gray-500 mb-4">
-            {searchTerm ? 'Try a different search term or' : 'Generate an application form to'} invite candidates to apply
+        <motion.div 
+          className="text-center py-16 bg-gradient-to-br from-white to-indigo-50/30 rounded-xl border border-indigo-100/50 shadow-sm"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="relative mx-auto w-16 h-16 mb-4">
+            <div className="absolute inset-0 bg-amber-100 rounded-full animate-ping opacity-30"></div>
+            <div className="relative bg-gradient-to-br from-amber-50 to-amber-100 rounded-full p-4 shadow-sm border border-amber-200">
+              <AlertTriangle className="h-8 w-8 text-amber-500" />
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No candidates found</h3>
+          <p className="text-gray-600 max-w-md mx-auto mb-6">
+            {searchTerm ? 
+              'Try a different search term or clear your search to see all candidates.' : 
+              'Generate an application form to invite candidates to apply for this position.'}
           </p>
-        </div>
+          {searchTerm && (
+            <motion.button
+              onClick={() => setSearchTerm('')}
+              className="bg-white text-indigo-600 font-medium px-5 py-2 rounded-full hover:bg-indigo-50 transition-colors border border-indigo-200 shadow-sm inline-flex items-center"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Clear Search
+            </motion.button>
+          )}
+        </motion.div>
       ) : (
-        <div className="border rounded-lg overflow-x-auto">
+        <motion.div 
+          className="border rounded-xl overflow-hidden shadow-sm bg-white/95 backdrop-blur-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50 hover:bg-gray-50">
-                <TableHead className="w-12 text-center">#</TableHead>
+              <TableRow className="bg-gradient-to-r from-indigo-50/70 to-blue-50/70 hover:from-indigo-50 hover:to-blue-50">
+                <TableHead className="w-12 text-center font-semibold text-indigo-900">#</TableHead>
                 <TableHead 
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:text-indigo-700 transition-colors"
                   onClick={() => handleSort('userName')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center font-semibold text-indigo-900">
                     Full Name {renderSortIcon('userName')}
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:text-indigo-700 transition-colors"
                   onClick={() => handleSort('userEmail')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center font-semibold text-indigo-900">
                     Email {renderSortIcon('userEmail')}
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:text-indigo-700 transition-colors"
                   onClick={() => handleSort('created_at')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center font-semibold text-indigo-900">
                     Applied Date {renderSortIcon('created_at')}
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:text-indigo-700 transition-colors"
                   onClick={() => handleSort('review_status')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center font-semibold text-indigo-900">
                     Status {renderSortIcon('review_status')}
                   </div>
                 </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right font-semibold text-indigo-900">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCandidates.map((candidate, index) => (
-                <TableRow key={candidate.id} className="hover:bg-gray-50">
+                <TableRow key={candidate.candidate_id} className="hover:bg-gray-50">
                   <TableCell className="text-center font-medium">{index + 1}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
-                        <User className="h-4 w-4" />
+                    <motion.div 
+                      className="flex items-center gap-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <span className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-700 flex items-center justify-center shadow-sm border border-indigo-200/50">
+                        <User className="h-5 w-5" />
                       </span>
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-900">
                         {candidate.userName || 'Anonymous Candidate'}
                       </span>
-                    </div>
+                    </motion.div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <MailCheck className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{candidate.userEmail || 'No email provided'}</span>
-                    </div>
+                    <motion.div 
+                      className="flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 + 0.1 }}
+                    >
+                      <div className="p-1 rounded-full bg-blue-50">
+                        <MailCheck className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="text-gray-700">{candidate.userEmail || 'No email provided'}</span>
+                    </motion.div>
                   </TableCell>
                   <TableCell>
-                    <time dateTime={candidate.created_at}>
-                      {moment(candidate.created_at).format('MMM D, YYYY')}
-                    </time>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 + 0.2 }}
+                    >
+                      <time dateTime={candidate.created_at} className="flex items-center gap-2">
+                        <div className="p-1 rounded-full bg-indigo-50">
+                          <Calendar className="h-4 w-4 text-indigo-600" />
+                        </div>
+                        {moment(candidate.created_at).format('MMM D, YYYY')}
+                      </time>
+                    </motion.div>
                   </TableCell>
                   <TableCell>
-                    {getStatusBadge(candidate.review_status, candidate.completed)}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
+                    >
+                      {getStatusBadge(candidate.review_status, candidate.completed)}
+                    </motion.div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <motion.div 
+                      className="flex justify-end gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 + 0.4 }}
+                    >
                       {candidate.completed ? (
-                        <Link href={`/main/interview-details/${interviewId}/candidate/${candidate.id}`}>
-                          <Button variant="outline" size="sm" className="h-8">
-                            <FileBarChart className="h-4 w-4 mr-1" /> Report
+                        <Link href={`/interview-details/${interviewId}/candidate/${candidate.candidate_id}`}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-9 rounded-full px-4 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
+                          >
+                            <FileBarChart className="h-4 w-4 mr-2" /> Report
                           </Button>
                         </Link>
                       ) : (
-                        <Link href={getInterviewUrl(candidate.id, candidate.userName, candidate.userEmail)} target="_blank">
-                          <Button variant="outline" size="sm" className="h-8">
-                            <ExternalLink className="h-4 w-4 mr-1" /> Interview Link
+                        <Link href={getInterviewUrl(candidate.candidate_id, candidate.userName, candidate.userEmail)} target="_blank">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-9 rounded-full px-4 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" /> Interview
                           </Button>
                         </Link>
                       )}
                       
-                      <Link href={`/main/interview-details/${interviewId}/candidate/${candidate.id}`}>
+                      <Link href={`/interview-details/${interviewId}/candidate/${candidate.candidate_id}`}>
                         <Button 
                           size="sm" 
-                          className="h-8 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                          className="h-9 rounded-full px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
                         >
-                          <Eye className="h-4 w-4 mr-1" /> Details
+                          <Eye className="h-4 w-4 mr-2" /> Details
                         </Button>
                       </Link>
-                    </div>
+                    </motion.div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </motion.div>
       )}
       
-      <div className="flex justify-between items-center mt-2">
-        <div className="text-xs text-gray-500">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-2">
+        <div className="text-sm text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full font-medium">
           Showing {filteredCandidates.length} of {candidates.length} candidates
         </div>
         {(interviewStatus === 'Started' || interviewStatus === 'Ended') && (
-          <div className="text-xs text-amber-600 flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            {interviewStatus === 'Started' 
-              ? 'Interview in progress: New applications are disabled' 
-              : 'Interview has ended: New applications are disabled'}
-          </div>
+          <motion.div 
+            className="text-sm text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-2"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <span className="font-medium">
+              {interviewStatus === 'Started' 
+                ? 'Interview in progress: New applications are disabled' 
+                : 'Interview has ended: New applications are disabled'}
+            </span>
+          </motion.div>
         )}
       </div>
     </div>

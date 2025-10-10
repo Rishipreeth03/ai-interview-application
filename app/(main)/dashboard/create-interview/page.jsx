@@ -1,5 +1,5 @@
 "use client"
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Progress } from '@/components/ui/progress'
 import FormContainer from './_components/FormContainer'
 import QuestionList from './_components/QuestionList'
@@ -9,7 +9,7 @@ import StepIndicator from './_components/StepIndicator'
 import VideoScreeningToggle from './_components/VideoScreeningToggle'
 import useCreateInterview from './_components/useCreateInterview'
 
-// Step labels for indicator
+// Step labels for indicator - memoize to prevent recreation
 const steps = [
   { label: "Details" },
   { label: "Questions" },
@@ -40,10 +40,13 @@ function CreateInterview() {
                 {step === 1 ? (
                     <>
                         <FormContainer onHandleInputChange={onHandleInputChange} GoToNext={onGotoNext} />
-                        <VideoScreeningToggle
-                            value={!!formdata?.videoScreening}
-                            onChange={val => onHandleInputChange("videoScreening", val)}
-                        />
+                        {/* Only show video screening toggle if not coming from video-enabled link */}
+                        {!formdata.videoScreening && (
+                            <VideoScreeningToggle
+                                value={!!formdata?.videoScreening}
+                                onChange={val => onHandleInputChange("videoScreening", val)}
+                            />
+                        )}
                     </>
                 ) : step === 2 ? (
                     <QuestionList formdata={formdata} onCreateLink={onCreateLink} />
@@ -55,4 +58,4 @@ function CreateInterview() {
     )
 }
 
-export default CreateInterview
+export default React.memo(CreateInterview)

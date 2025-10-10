@@ -12,12 +12,25 @@ function useInterviewSetup(interview_id, router) {
 
   useEffect(() => {
     const fetchInterview = async () => {
-      const { data } = await supabase
-        .from("interviews")
-        .select("videoScreening")
-        .eq("interview_id", interview_id)
-        .single()
-      setVideoScreeningRequired(!!data?.videoScreening)
+      try {
+        console.log('Fetching interview for setup, ID:', interview_id);
+        
+        const { data, error } = await supabase
+          .from('interviews')
+          .select("videoScreening")
+          .eq("interview_id", interview_id)
+          .single()
+          
+        if (error) {
+          console.error('Error fetching interview for setup:', error);
+          return;
+        }
+        
+        console.log('Setup data fetched:', data);
+        setVideoScreeningRequired(!!data?.videoScreening)
+      } catch (err) {
+        console.error('Exception in fetchInterview setup:', err);
+      }
     }
     fetchInterview()
   }, [interview_id])

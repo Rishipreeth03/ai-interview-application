@@ -3,7 +3,17 @@ import { Button } from '@/components/ui/button'
 import { Video, Loader2Icon, AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
-function InterviewForm({ userName, setUserName, userEmail, setUserEmail, loading, onJoinInterview, emailDisabled, interviewStatus }) {
+function InterviewForm({ 
+  userName, 
+  setUserName, 
+  userEmail, 
+  setUserEmail, 
+  loading, 
+  onJoinInterview, 
+  emailDisabled, 
+  nameDisabled,
+  interviewStatus 
+}) {
   const isEnded = interviewStatus === 'Ended';
   
   return (
@@ -14,6 +24,14 @@ function InterviewForm({ userName, setUserName, userEmail, setUserEmail, loading
           <div>
             <h3 className="font-medium text-red-700">This interview has ended</h3>
             <p className="text-sm text-red-600">This interview is no longer available for participation.</p>
+          </div>
+        </div>
+      )}
+      
+      {(nameDisabled || emailDisabled) && !isEnded && (
+        <div className="w-full mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center">
+          <div className="text-sm text-blue-700">
+            <p className="font-medium">Your details are pre-filled for this interview.</p>
           </div>
         </div>
       )}
@@ -39,8 +57,8 @@ function InterviewForm({ userName, setUserName, userEmail, setUserEmail, loading
           placeholder="e.g. Rishipreeth"
           value={userName}
           onChange={e => setUserName(e.target.value)}
-          className="rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
-          disabled={isEnded}
+          className={`rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition ${nameDisabled ? 'bg-gray-50' : ''}`}
+          disabled={nameDisabled || isEnded}
         />
       </div>
       <div className="w-full mb-2">
@@ -49,7 +67,7 @@ function InterviewForm({ userName, setUserName, userEmail, setUserEmail, loading
           value={userEmail}
           onChange={e => setUserEmail(e.target.value)}
           placeholder="e.g. candidate@email.com"
-          className="rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+          className={`rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition ${emailDisabled ? 'bg-gray-50' : ''}`}
           disabled={emailDisabled || isEnded}
         />
       </div>

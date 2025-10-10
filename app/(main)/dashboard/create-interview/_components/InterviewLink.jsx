@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Clock, Copy, Mail, Plus, MessageCircle, Calendar } from 'lucide-react'
+import { ArrowLeft, Clock, Copy, Plus, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -31,46 +31,6 @@ function InterviewLink({ interviewId, formData }) {
         toast.success('Link Copied!', { description: 'You can now share it with candidates.' })
     }
 
-    const onShareWhatsapp = () => {
-        // Include scheduling information if available
-        let scheduleInfo = '';
-        if (isScheduled) {
-            scheduleInfo = `Available from ${startDate} to ${endDate}\n\n`;
-        }
-        
-        const message = encodeURIComponent(
-            `You are invited to an AI-powered interview for the position of "${interviewTitle}".\n\n` +
-            `Interview Duration: ${interviewDuration}\n\n` +
-            scheduleInfo +
-            `Click the link below to start your interview:\n${url}\n\n` +
-            `Best of luck.`
-        )
-        window.open(`https://wa.me/?text=${message}`, '_blank')
-    }
-
-    const onShareEmail = () => {
-        const subject = encodeURIComponent('Invitation: AI Interview for ' + interviewTitle)
-        
-        // Include scheduling information if available
-        let scheduleInfo = '';
-        if (isScheduled) {
-            scheduleInfo = `Interview Availability: From ${startDate} to ${endDate}\n\n`;
-        }
-        
-        const body = encodeURIComponent(
-            `Hello,\n\n` +
-            `You are invited to an AI-powered interview for the position of "${interviewTitle}".\n\n` +
-            `Interview Duration: ${interviewDuration}\n\n` +
-            scheduleInfo +
-            `Please click the link below to begin your interview:\n${url}\n\n` +
-            `Best regards,\nAI Recruiter Team`
-        )
-        window.open(
-            `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${subject}&body=${body}`,
-            '_blank'
-        )
-    }
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 via-white to-blue-100 py-10">
             <div className="relative w-full max-w-lg">
@@ -87,7 +47,7 @@ function InterviewLink({ interviewId, formData }) {
                     {/* Interview Link Section */}
                     <div className='w-full mb-6'>
                         <div className="bg-white/90 rounded-xl shadow p-5 border border-gray-100">
-                            <label className='block text-sm font-semibold text-gray-700 mb-2'>Interview Link</label>
+                            <label className='block text-sm font-semibold text-gray-700 mb-2'>Link</label>
                             <div className="flex gap-2 w-full">
                                 <Input 
                                     defaultValue={GetInterviewUrl()} 
@@ -117,41 +77,38 @@ function InterviewLink({ interviewId, formData }) {
                         </div>
                     </div>
                     <hr className="w-full my-4 border-gray-200" />
-                    {/* Share Section */}
+                    {/* Interview Details Link */}
                     <div className='w-full mb-6'>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Share Via</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Interview Details</label>
                         <div className='flex gap-4'>
-                            <Button
-                                variant="outline"
-                                onClick={onShareWhatsapp}
-                                className="flex gap-2 items-center px-4 py-2 rounded-lg border border-gray-200 hover:border-green-500 hover:bg-green-50 transition"
-                                title="Share interview link via WhatsApp"
-                            >
-                                <MessageCircle className="w-5 h-5 text-green-600" />
-                                <span className="text-sm font-medium text-gray-700">WhatsApp</span>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={onShareEmail}
-                                className="flex gap-2 items-center px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition"
-                                title="Share interview link via Email"
-                            >
-                                <Mail className="w-5 h-5 text-blue-600" />
-                                <span className="text-sm font-medium text-gray-700">Email</span>
-                            </Button>
+                            <Link href={`/interview-details/${interviewId}`} className="w-full">
+                                <Button
+                                    variant="outline"
+                                    className="flex gap-2 items-center px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition w-full"
+                                    title="View Interview Details"
+                                >
+                                    <Calendar className="w-5 h-5 text-purple-600" />
+                                    <span className="text-sm font-medium text-gray-700">View Interview Details</span>
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                     <hr className="w-full my-4 border-gray-200" />
                     {/* Navigation Buttons */}
                     <div className='flex w-full gap-4 justify-between mt-2'>
-                        <Link href={'/dashboard'} className="w-1/2">
+                        <Link href={'/dashboard'} className="w-1/3">
                             <Button variant={'outline'} className="flex gap-2 items-center w-full hover:bg-gray-100 transition">
                                 <ArrowLeft /> Dashboard
                             </Button>
                         </Link>
-                        <Link href={'/dashboard/create-interview'} className="w-1/2">
+                        <Link href={`/interview-details/${interviewId}`} className="w-1/3">
+                            <Button className="flex gap-2 items-center w-full bg-purple-600 hover:bg-purple-700 text-white transition">
+                                <Calendar className="w-4 h-4" /> Details
+                            </Button>
+                        </Link>
+                        <Link href={'/dashboard/create-interview'} className="w-1/3">
                             <Button className="flex gap-2 items-center w-full bg-primary hover:bg-primary/90 text-white transition">
-                                <Plus /> New Interview
+                                <Plus /> New
                             </Button>
                         </Link>
                     </div>

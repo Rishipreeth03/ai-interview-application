@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { Loader2Icon, AlertTriangle } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner'; // Updated to use sonner for consistent toast notifications
 import { Button } from '@/components/ui/button';
 import QuestionListContainer from './QuestionListContainer';
 import { useUser } from '@/app/provider';
@@ -26,108 +26,19 @@ function QuestionList({ formdata, onCreateLink }) {
     setloading(true);
     setErrorMsg('');
     try {
-      // Ensure difficulty_level is included in the payload
-      const payload = {
-        ...formdata,
-        difficulty_level: formdata.difficulty_level || 'medium'
-      };
-      
-      console.log("Sending payload:", payload);
-      const result = await axios.post('/api/ai-model', payload);
-      
-      if (result.data.error) {
-        throw new Error(result.data.error);
-      }
-      
-      if (!result.data.content) {
-        throw new Error("No content returned from the API");
-      }
-      
-      // The API now sends processed content that should be valid JSON
-      const rawContent = result.data.content || "";
-      console.log("Raw content:", rawContent.substring(0, 100) + "..."); // Log first 100 chars
-      
-      // Debug information
-      if (result.data.original_content) {
-        console.log("Original content snippet:", result.data.original_content);
-      }
-      
-      // Handle different JSON formatting possibilities with more robust error handling
-      let parsedData;
-      try {
-        // First try direct parsing of the processed content from API
-        parsedData = JSON.parse(rawContent);
-      } catch (parseError) {
-        console.error("Initial JSON parsing failed:", parseError);
-        
-        // Try multiple fallback strategies
-        
-        // 1. Try removing markdown code blocks
-        try {
-          const cleanedContent = rawContent.replace(/```json|```/g, '').trim();
-          parsedData = JSON.parse(cleanedContent);
-          console.log("Parsed JSON after removing markdown blocks");
-        } catch (error1) {
-          // 2. Try extracting the array pattern manually
-          try {
-            const arrayMatch = rawContent.match(/(\[[\s\S]*\])/);
-            if (arrayMatch && arrayMatch[1]) {
-              const jsonStr = `{"interviewQuestions": ${arrayMatch[1]}}`;
-              parsedData = JSON.parse(jsonStr);
-              console.log("Parsed JSON after extracting array pattern");
-            } else {
-              throw new Error("No valid JSON array found");
-            }
-          } catch (error2) {
-            // 3. Try fixing common JSON syntax errors
-            try {
-              // Replace single quotes with double quotes
-              const fixedContent = rawContent
-                .replace(/'/g, '"')
-                .replace(/\s*=\s*/, ': ')
-                .trim();
-              
-              if (fixedContent.startsWith("{") || fixedContent.startsWith("[")) {
-                parsedData = JSON.parse(fixedContent);
-                console.log("Parsed JSON after syntax fixes");
-              } else {
-                throw new Error("Content doesn't start with valid JSON markers");
-              }
-            } catch (error3) {
-              console.error("All JSON parsing attempts failed");
-              throw new Error("Could not parse the response. Please try again with different job details.");
-            }
-          }
-        }
-      }
-      
-      // Handle the case where we have parsed JSON but it doesn't have the expected structure
-      if (!parsedData || !parsedData.interviewQuestions || !Array.isArray(parsedData.interviewQuestions)) {
-        console.error("Parsed data doesn't have interviewQuestions array:", parsedData);
-        
-        // If we have any array in the parsed data, try to use it
-        if (parsedData && Array.isArray(parsedData)) {
-          console.log("Using root array as questions");
-          setquestionslist(parsedData);
-        } else {
-          throw new Error("The response format was incorrect. Please try again.");
-        }
-      } else {
-        // Normal case - we have the expected structure
-        setquestionslist(parsedData.interviewQuestions);
-      }
+      const result = await axios.post('/api/ai-model', {
+        ...formdata
+      });
+      console.log(result.data);
+      const rawContent = result.data.content.trim();
+      const cleanedContent = rawContent.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(cleanedContent);
+
+      setquestionslist(parsed.interviewQuestions);
     } catch (e) {
-      // Show more specific error message for JSON parsing errors
-      if (e instanceof SyntaxError) {
-        setErrorMsg(`JSON parsing error: ${e.message}. Please try again.`);
-        console.error("JSON parsing error:", e);
-        console.error("Response that failed parsing:", result.data.content);
-      } else {
-        setErrorMsg(`Failed to generate questions. ${e.message || 'Please try again.'}`);
-        console.error("Question generation error:", e);
-      }
-      
-      toast.error('Question Generation Error');
+      setErrorMsg('Failed to generate questions. Please try again.');
+      toast.error('Server Error');
+      console.error(e);
     } finally {
       setloading(false);
     }
@@ -145,29 +56,48 @@ function QuestionList({ formdata, onCreateLink }) {
     const start_at = formdata?.start_at || null;
     const end_at = formdata?.end_at || null;
     
-    const { data, error } = await supabase
-      .from('"interviews"')
-      .insert([
-        {
-          ...formdata,
-          questionList: questionslist,
-          userEmail: user?.email,
-          interview_id: interview_id,
-          videoScreening: formdata?.videoScreening || false, // add videoScreening field
-          difficulty_level, // explicitly include the difficulty_level
-          start_at, // include the scheduled start time
-          end_at, // include the scheduled end time
-          updated_at: new Date().toISOString() // ensure updated_at is set
-        },
-      ])
-      .select()
+    try {
+      // Sanitize the data before insertion
+      const interviewData = {
+        ...formdata,
+        questionList: questionslist,
+        userEmail: user?.email,
+        interview_id: interview_id,
+        videoScreening: formdata?.videoScreening || false,
+        difficulty_level,
+        start_at,
+        end_at,
+        status: "Not Started", // Add status field
+        interview_type: formdata?.interview_type || 'private', // Ensure new fields are included
+        number_of_interviews: formdata?.number_of_interviews || 1, // Default to 1 if not set
+        updated_at: new Date().toISOString()
+      };
 
-    setsaveloading(false);
-    onCreateLink(interview_id);
-    if (error) {
-      console.error("Insert error:", error);
-      toast.error('Server Error');
-      setErrorMsg('Failed to save interview. Please try again.');
+      // Remove any undefined values to prevent database errors
+      Object.keys(interviewData).forEach(key => 
+        interviewData[key] === undefined && delete interviewData[key]
+      );
+
+      const { data, error } = await supabase
+        .from('interviews') // Remove the quotes around the table name
+        .insert([interviewData])
+        .select();
+
+      if (error) {
+        console.error("Insert error:", error);
+        toast.error('Server Error: ' + error.message);
+        setErrorMsg('Failed to save interview. Please try again.');
+        setsaveloading(false);
+        return;
+      }
+      
+      setsaveloading(false);
+      onCreateLink(interview_id);
+    } catch (err) {
+      console.error("Exception during insert:", err);
+      toast.error('Unexpected error occurred');
+      setErrorMsg('Failed to save interview due to an unexpected error.');
+      setsaveloading(false);
     }
   }
 
@@ -208,20 +138,79 @@ function QuestionList({ formdata, onCreateLink }) {
             <AlertTriangle className="w-5 h-5" />
             <span>{errorMsg}</span>
           </div>
-          <Button 
-            onClick={generateQuestionList} 
-            variant="outline" 
-            className="mt-2 text-sm border-red-300 hover:bg-red-100"
-          >
-            Try Again
-          </Button>
+          <div className="flex gap-2 mt-2">
+            <Button 
+              onClick={generateQuestionList} 
+              variant="outline" 
+              className="text-sm border-red-300 hover:bg-red-100"
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => {
+                // Try with simplified job description
+                const simplifiedData = {
+                  ...formdata,
+                  jobDescription: formdata.jobPosition // Use just the job title as description
+                };
+                setloading(true);
+                setErrorMsg('');
+                axios.post('/api/ai-model', simplifiedData, {
+                  timeout: 60000,
+                  headers: { 'Content-Type': 'application/json' }
+                })
+                .then(result => {
+                  if (result.data.error) {
+                    throw new Error(result.data.error);
+                  }
+                  
+                  if (!result.data.content) {
+                    throw new Error("No content returned");
+                  }
+                  
+                  const parsedData = JSON.parse(result.data.content);
+                  if (parsedData.interviewQuestions && Array.isArray(parsedData.interviewQuestions)) {
+                    setquestionslist(parsedData.interviewQuestions);
+                    toast.success("Successfully generated questions with simplified job details");
+                  } else {
+                    throw new Error("Invalid response format");
+                  }
+                })
+                .catch(err => {
+                  console.error("Simplified attempt failed:", err);
+                  toast.error("Simplified attempt also failed. Please try changing job details.");
+                  setErrorMsg(errorMsg + "\n\nSimplified attempt also failed.");
+                })
+                .finally(() => {
+                  setloading(false);
+                });
+              }}
+              variant="secondary" 
+              className="text-sm"
+            >
+              Try With Simplified Details
+            </Button>
+          </div>
         </div>
       )}
       {loading ? (
-        <div className="flex flex-col items-center justify-center space-y-4 animate-pulse min-h-[200px]">
-          <Loader2Icon className="w-10 h-10 animate-spin text-indigo-500" />
-          <h2 className="text-lg font-semibold text-gray-700">Generating Interview Questions...</h2>
-          <p className="text-sm text-gray-500">This may take a moment</p>
+        <div className="flex flex-col items-center justify-center space-y-4 min-h-[200px] border border-indigo-100 rounded-lg p-6 bg-indigo-50">
+          <div className="relative">
+            <Loader2Icon className="w-12 h-12 animate-spin text-indigo-600" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>
+            </div>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-800">Generating Interview Questions...</h2>
+          <div className="flex flex-col items-center text-center">
+            <p className="text-sm text-gray-600">Our AI is crafting custom questions for this position</p>
+            <p className="text-xs text-gray-500 mt-1">This typically takes 15-30 seconds</p>
+          </div>
+          <div className="w-full max-w-xs mt-2">
+            <div className="h-1 w-full bg-indigo-200 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-600 rounded-full animate-progress-indeterminate"></div>
+            </div>
+          </div>
         </div>
       ) : questionslist.length === 0 && !errorMsg ? (
         <div className="flex flex-col items-center justify-center min-h-[200px] bg-gray-50 rounded-lg p-6">

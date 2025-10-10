@@ -110,6 +110,43 @@ const FormContainer = ({onHandleInputChange,GoToNext}) => {
           </p>
         </div>
 
+        {/* Interview Access Type - New Field */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Interview Access Type</label>
+          <Select onValueChange={(value)=>onHandleInputChange('interview_type',value)} defaultValue="private">
+            <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition">
+              <SelectValue placeholder="Select Access Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private</SelectItem>
+              <SelectItem value="public">Public</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            Private interviews are only accessible via direct link. Public interviews may appear in search results.
+          </p>
+        </div>
+
+        {/* Number of Interviews - New Field */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Number of Interviews</label>
+          <Input 
+            type="number"
+            min="1"
+            defaultValue="1"
+            className="mt-1 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+            onChange={(event) => {
+              const value = parseInt(event.target.value);
+              if (value > 0) {
+                onHandleInputChange('number_of_interviews', value);
+              }
+            }}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            How many times can this interview be taken with this link.
+          </p>
+        </div>
+
         {/* Interview Schedule */}
         <div>
           <div className="flex items-center gap-2 mb-2">

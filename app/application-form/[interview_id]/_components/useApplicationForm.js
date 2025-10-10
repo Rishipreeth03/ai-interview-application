@@ -113,7 +113,7 @@ export default function useApplicationForm() {
       try {
         const { data, error } = await supabase
           .from('interviews')
-          .select('*')
+          .select('*, applied_count, number_of_interviews')
           .eq('interview_id', interview_id)
           .single()
         if (error) throw error
@@ -129,6 +129,11 @@ export default function useApplicationForm() {
         }
         if (data.status === 'Ended') {
           setError('This interview has ended and is no longer accepting applications')
+          return
+        }
+        // Check if maximum number of applications has been reached
+        if (data.applied_count >= data.number_of_interviews) {
+          setError('This interview has reached its maximum number of applicants')
           return
         }
         const { data: existingApplication, error: existingError } = await supabase
@@ -215,15 +220,66 @@ export default function useApplicationForm() {
         setIsSubmitting(false)
         return
       }
-      const { error: insertError } = await supabase
-        .from('interview-feedback')
-        .insert([recordData])
-      if (insertError) {
+      // Get current applied_count and check if we can still add applicants
+      const { data: interviewCheck, error: checkLimitError } = await supabase
+        .from('interviews')
+        .select('applied_count, number_of_interviews')
+        .eq('interview_id', interview_id)
+        .single()
+        
+      if (checkLimitError) {
+        setFormState('error')
+        setIsSubmitting(false)
+        toast.error('Failed to verify application limits. Please try again.')
+        return
+      }
+      
+      if (interviewCheck.applied_count >= interviewCheck.number_of_interviews) {
+        setFormState('error')
+        setIsSubmitting(false)
+        setError('This interview has reached its maximum number of applicants')
+        toast.error('This interview is no longer accepting applications')
+        return
+      }
+      
+      // Use a transaction to ensure both operations succeed or fail together
+      try {
+        // Start a transaction
+        const { error: transactionError } = await supabase.rpc('submit_application', {
+          record_data: recordData,
+          interview_id_param: interview_id
+        })
+        
+        if (transactionError) {
+          // If RPC fails, try manual transaction
+          console.warn('RPC transaction failed, falling back to manual process', transactionError)
+          
+          // 1. Insert the record
+          const { error: insertError } = await supabase
+            .from('interview-feedback')
+            .insert([recordData])
+          
+          if (insertError) {
+            throw insertError
+          }
+          
+          // 2. Update the applied count
+          const { error: updateError } = await supabase
+            .from('interviews')
+            .update({ applied_count: interviewCheck.applied_count + 1 })
+            .eq('interview_id', interview_id)
+          
+          if (updateError) {
+            throw updateError
+          }
+        }
+      } catch (transactionError) {
         setFormState('error')
         setIsSubmitting(false)
         toast.error('Failed to submit application. Please check your information and try again.')
         return
       }
+      
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem(`application_form_${interview_id}`)
       }

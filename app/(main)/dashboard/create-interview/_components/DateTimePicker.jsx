@@ -42,10 +42,11 @@ const DateTimePicker = ({
   const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutes = ['00', '15', '30', '45'];
 
-  // Use a ref to track if this is the first render
+  // Use a ref to track if this is the first render and handle debounce
   const isInitialRender = useRef(true);
+  const updateTimeout = useRef(null);
 
-  // Update the value when internal state changes
+  // Update the value when internal state changes with debounce
   useEffect(() => {
     // Skip the initial render to prevent the infinite loop
     if (isInitialRender.current) {
@@ -53,22 +54,36 @@ const DateTimePicker = ({
       return;
     }
     
-    const dateTimeString = `${date}T${hour}:${minute}:00`;
-    const dateTime = moment(dateTimeString);
-    
-    // Only trigger onChange if it's a valid date
-    if (dateTime.isValid()) {
-      onChange(dateTime.toISOString());
+    // Clear any pending updates
+    if (updateTimeout.current) {
+      clearTimeout(updateTimeout.current);
     }
+    
+    // Debounce updates to prevent excessive validation
+    updateTimeout.current = setTimeout(() => {
+      const dateTimeString = `${date}T${hour}:${minute}:00`;
+      const dateTime = moment(dateTimeString);
+      
+      // Only trigger onChange if it's a valid date
+      if (dateTime.isValid()) {
+        onChange(dateTime.toISOString());
+      }
+    }, 300); // 300ms debounce
+    
+    return () => {
+      if (updateTimeout.current) {
+        clearTimeout(updateTimeout.current);
+      }
+    };
   }, [date, hour, minute]);
 
-  // Validate the selected date is not before minimum
+  // Validate the selected date is not before minimum - without toast messages
   const handleDateChange = (e) => {
     const newDate = e.target.value;
     const dateTime = moment(`${newDate}T${hour}:${minute}:00`);
     
     if (dateTime.isBefore(minimumDate, 'day')) {
-      // If before minimum, set to minimum date
+      // If before minimum, set to minimum date - silently correct without toast
       setDate(minimumDate.format('YYYY-MM-DD'));
     } else {
       setDate(newDate);

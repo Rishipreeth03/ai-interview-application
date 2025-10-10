@@ -20,48 +20,74 @@ export default function useCandidateDetailsPage(interviewId) {
     try {
       console.log('Fetching interview data for ID:', interviewId)
       
+      if (!interviewId) {
+        throw new Error('Interview ID is undefined or null');
+      }
+      
       // Try direct table access first
       try {
         const { data, error } = await supabase
           .from('interviews')
           .select('*')
           .eq('interview_id', interviewId)
-          .single()
         
-        if (!error && data) {
-          console.log('Interview data fetched (method 1):', data)
-          setInterviewData(data)
+        if (!error && data && data.length > 0) {
+          console.log('Interview data fetched (method 1):', data[0])
+          setInterviewData(data[0]) // Take the first result
           return
+        } else if (error) {
+          console.log('Method 1 error:', error.message)
+        } else if (data && data.length === 0) {
+          console.log('No interview found with ID (method 1):', interviewId)
         }
       } catch (directError) {
-        console.log('Direct access failed, trying fallback method')
+        console.log('Direct access failed, trying fallback method:', directError)
       }
       
       // Fallback: Try with raw SQL query
-      const { data, error } = await supabase
-        .rpc('get_interview', { id: interviewId })
-        .single()
-      
-      if (error) {
-        // Third attempt: Try with the SQL query directly
-        const { data: sqlData, error: sqlError } = await supabase
-          .from('interviews')
-          .select('*')
-          .filter('interview_id', 'eq', interviewId)
-          .single()
+      try {
+        const { data, error } = await supabase
+          .rpc('get_interview', { id: interviewId })
         
-        if (sqlError) {
-          throw sqlError
+        if (!error && data) {
+          // RPC might return a single object or an array, handle both cases
+          const interviewData = Array.isArray(data) ? data[0] : data;
+          
+          if (interviewData) {
+            console.log('Interview data fetched (method 2):', interviewData)
+            setInterviewData(interviewData)
+            return
+          } else {
+            console.log('No interview data returned from RPC (method 2)')
+          }
+        } else if (error) {
+          console.log('Method 2 error:', error.message)
         }
-        
-        setInterviewData(sqlData)
-        return
+      } catch (rpcError) {
+        console.log('RPC method failed, trying third method:', rpcError)
       }
       
-      console.log('Interview data fetched (method 2):', data)
-      setInterviewData(data)
+      // Third attempt: Try with the SQL query directly but without .single()
+      const { data: sqlData, error: sqlError } = await supabase
+        .from('interviews')
+        .select('*')
+        .eq('interview_id', interviewId)
+      
+      if (sqlError) {
+        console.log('Method 3 error:', sqlError.message)
+        throw new Error(`All methods failed to fetch interview data: ${sqlError.message}`)
+      }
+      
+      // Check if we got any results
+      if (sqlData && sqlData.length > 0) {
+        console.log('Interview data fetched (method 3):', sqlData[0])
+        setInterviewData(sqlData[0]) // Take the first result
+      } else {
+        console.log('No interview data found with ID:', interviewId)
+        throw new Error(`No interview found with ID: ${interviewId}`)
+      }
     } catch (error) {
-      console.error('Error fetching interview data:', error)
+      console.error('Error fetching interview data:', error.message || JSON.stringify(error))
       toast.error('Failed to load interview details')
     }
   }
@@ -70,6 +96,10 @@ export default function useCandidateDetailsPage(interviewId) {
     setIsLoading(true)
     try {
       console.log('Fetching candidates for interview ID:', interviewId)
+      
+      if (!interviewId) {
+        throw new Error('Interview ID is undefined or null');
+      }
       
       // Try direct table access first
       try {
@@ -83,9 +113,11 @@ export default function useCandidateDetailsPage(interviewId) {
           console.log('Candidates fetched (method 1):', data?.length || 0)
           setCandidates(data || [])
           return
+        } else {
+          console.log('Method 1 error:', error.message)
         }
       } catch (directError) {
-        console.log('Direct access to interview-feedback failed, trying alternative method')
+        console.log('Direct access to interview-feedback failed, trying alternative method:', directError)
       }
       
       // Try alternative syntax (SQL-style filter)
@@ -96,13 +128,14 @@ export default function useCandidateDetailsPage(interviewId) {
         .order('created_at', { ascending: false })
       
       if (error) {
-        throw error
+        console.log('Method 2 error:', error.message)
+        throw new Error(`Failed to fetch candidates: ${error.message}`)
       }
       
       console.log('Candidates fetched (method 2):', data?.length || 0)
       setCandidates(data || [])
     } catch (error) {
-      console.error('Error fetching candidates:', error)
+      console.error('Error fetching candidates:', error.message || JSON.stringify(error))
       toast.error('Failed to load candidates')
     } finally {
       setIsLoading(false)
