@@ -12,7 +12,8 @@ function InterviewForm({
   onJoinInterview, 
   emailDisabled, 
   nameDisabled,
-  interviewStatus 
+  interviewStatus,
+  setupEnabled
 }) {
   const isEnded = interviewStatus === 'Ended';
   
@@ -72,7 +73,7 @@ function InterviewForm({
         />
       </div>
       <Button
-        disabled={loading || !userName || !userEmail || isEnded}
+        disabled={loading || !userName || !userEmail || isEnded || !setupEnabled}
         onClick={onJoinInterview}
         className={`mt-6 w-full font-bold py-3 rounded-xl ${
           isEnded 

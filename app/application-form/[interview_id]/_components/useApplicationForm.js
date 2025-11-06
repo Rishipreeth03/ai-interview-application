@@ -197,12 +197,6 @@ export default function useApplicationForm() {
         review_status: 'pending',
         feedback: null,
         recommended: null,
-        ai_score: null,
-        technical_score: null,
-        communication_score: null,
-        problem_solving_score: null,
-        response_quality_avg: null,
-        candidate_feedback_score: null,
         created_at: timestamp,
       }
       const { data: existingRecord, error: checkError } = await supabase

@@ -12,6 +12,18 @@ import { Button } from '@/components/ui/button'
 
 function Interview() {
   const { interview_id } = useParams()
+  // If no interview_id param, show Not Found
+  if (!interview_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="p-8 rounded-xl shadow-lg border border-gray-200 bg-gray-50 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">Page Not Found</h2>
+          <p className="mb-6 text-gray-700">No interview ID was provided. Please check your link or return to the home page.</p>
+          <Button onClick={() => window.location.href = '/'} className="bg-red-500 hover:bg-red-600 text-white">Return Home</Button>
+        </div>
+      </div>
+    )
+  }
   const router = useRouter()
   const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext)
   
@@ -31,19 +43,6 @@ function Interview() {
     onJoinInterview,
   } = useInterviewPage(interview_id, setInterviewInfo, router)
 
-  // Fetch email from auth session only if we don't have URL params
-  React.useEffect(() => {
-    async function fetchAuthEmail() {
-      if (!hasUrlParams) {
-        const { data } = await supabase.auth.getUser()
-        if (data?.user?.email) {
-          setUserEmail(data.user.email)
-        }
-      }
-    }
-    fetchAuthEmail()
-    // eslint-disable-next-line
-  }, [])
   
   // Debug context values
   React.useEffect(() => {
@@ -144,6 +143,7 @@ function Interview() {
                 emailDisabled={hasUrlParams}
                 nameDisabled={hasUrlParams}
                 interviewStatus={interviewData?.status}
+                setupEnabled={interviewData?.status === 'Started'}
               />
               <div className="mt-6">
                 <InterviewInfo />
