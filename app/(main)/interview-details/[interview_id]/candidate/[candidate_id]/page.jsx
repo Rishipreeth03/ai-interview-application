@@ -20,7 +20,7 @@ export default function CandidateReportPage() {
   const { interview_id, candidate_id } = useParams()
   const [updating, setUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState("summary")
-  
+
   const {
     candidate,
     candidateData,
@@ -88,21 +88,21 @@ export default function CandidateReportPage() {
       </div>
     )
   }
-  
+
   // Get feedback data from candidate data
   const feedbackData = candidateData?.feedback || {}
   const questionResponses = feedbackData.questionResponses || []
-  
+
   return (
     <div className="container py-6 max-w-6xl space-y-6">
       <SonnerProvider />
-      <CandidateReportHeader 
-        candidate={candidate} 
+      <CandidateReportHeader
+        candidate={candidate}
         interviewData={interviewData}
       />
-      
+
       <Separator />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           {/* Tabs Navigation */}
@@ -114,52 +114,52 @@ export default function CandidateReportPage() {
               <TabsTrigger value="problem-solving">Problem Solving</TabsTrigger>
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
-            
+
             {/* Summary Tab */}
             <TabsContent value="summary" className="mt-0">
-              <InterviewFeedback 
+              <InterviewFeedback
                 feedbackData={feedbackData}
                 aiScore={candidateData?.ai_score}
                 problemSolvingScore={candidateData?.problem_solving_score}
               />
             </TabsContent>
-            
+
             {/* Technical Tab */}
             <TabsContent value="technical" className="mt-0">
-              <TechnicalAssessment 
+              <TechnicalAssessment
                 technicalEvaluation={feedbackData?.technicalEvaluation}
                 score={candidateData?.technical_score}
               />
             </TabsContent>
-            
+
             {/* Communication Tab */}
             <TabsContent value="communication" className="mt-0">
-              <CommunicationSkills 
+              <CommunicationSkills
                 communicationEvaluation={feedbackData?.communicationEvaluation}
                 score={candidateData?.communication_score}
               />
             </TabsContent>
-            
+
             {/* Problem Solving Tab */}
             <TabsContent value="problem-solving" className="mt-0">
-              <ProblemSolvingAssessment 
+              <ProblemSolvingAssessment
                 problemSolvingEvaluation={feedbackData?.problemSolvingEvaluation}
                 score={candidateData?.problem_solving_score}
               />
             </TabsContent>
-            
+
             {/* Transcript Tab */}
             <TabsContent value="transcript" className="mt-0">
-              <InterviewTranscript 
+              <InterviewTranscript
                 transcript={parsedConversation}
                 questionResponses={questionResponses}
               />
             </TabsContent>
           </Tabs>
         </div>
-        
+
         <div className="md:col-span-1">
-          <CandidateDecisionPanel 
+          <CandidateDecisionPanel
             candidateId={candidate_id}
             candidateName={candidate?.name || 'Candidate'}
             currentStatus={candidateData?.review_status}

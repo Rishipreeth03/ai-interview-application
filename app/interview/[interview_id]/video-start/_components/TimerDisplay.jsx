@@ -1,19 +1,18 @@
-'use client'
-import React from 'react'
+import { Timer } from 'lucide-react'
 
-export default function TimerDisplay({ secondsElapsed }) {
-  // Format time as MM:SS
-  const formatTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-14 h-14 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full flex items-center justify-center border border-indigo-100 shadow-inner">
-        <span className="font-semibold text-lg text-indigo-700">{formatTime(secondsElapsed)}</span>
-      </div>
-    </div>
-  );
+function TimerDisplay({ secondsElapsed }) {
+    const formatTime = secs => {
+        const h = String(Math.floor(secs / 3600)).padStart(2, '0')
+        const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0')
+        const s = String(secs % 60).padStart(2, '0')
+        return `${h}:${m}:${s}`
+    }
+    return (
+        <span className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-xl shadow border border-indigo-100 font-semibold text-indigo-700 text-base">
+            <Timer className="w-5 h-5" />
+            {formatTime(secondsElapsed)}
+        </span>
+    )
 }
+
+export default TimerDisplay

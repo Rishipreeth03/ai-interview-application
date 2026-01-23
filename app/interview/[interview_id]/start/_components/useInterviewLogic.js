@@ -9,11 +9,11 @@ function useInterviewLogic(interviewInfo, interview_id, router) {
     const vapiRef = useRef()
     if (!vapiRef.current) {
         const apiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY
-        
+
         if (!apiKey) {
             throw new Error('Vapi API key is missing')
         }
-        
+
         try {
             vapiRef.current = new Vapi(apiKey)
         } catch (error) {
@@ -41,13 +41,13 @@ function useInterviewLogic(interviewInfo, interview_id, router) {
         if (!interviewInfo?.interviewData?.questionList) return []
         return interviewInfo.interviewData.questionList.map(item => item.question)
     }, [interviewInfo])
-    
+
     // Start the interview process when interviewInfo is available
     useEffect(() => {
         const checkAndStart = async () => {
             if (interviewInfo) {
                 setShowLoading(true)
-                
+
                 // Check if interview was already completed
                 const completed = await hasCandidateCompletedInterview(interviewInfo.userEmail, interview_id)
                 if (completed) {
@@ -55,7 +55,7 @@ function useInterviewLogic(interviewInfo, interview_id, router) {
                     setShowLoading(false)
                     return
                 }
-                
+
                 // Start the interview call
                 await startCall()
                 setShowLoading(false)
@@ -65,100 +65,69 @@ function useInterviewLogic(interviewInfo, interview_id, router) {
         checkAndStart()
     }, [interviewInfo])
 
-    // Enhanced function to start the Vapi call with retry mechanism
-    const startCall = async () => {
-        let questionList
-        interviewInfo?.interviewData?.questionList.forEach(item => {
-            questionList = item?.question + ", " + questionList
-        })
-        const durationMin = interviewInfo?.duration ? Number(interviewInfo.duration) : 0
-        const assistantOptions = {
-            name: "AI Recruiter",
-            firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}?`,
-            transcriber: {
-                provider: "deepgram",
-                model: "nova-2",
-                language: "en-US",
-            },
-            voice: {
-                provider: "playht",
-                voiceId: "jennifer",
-            },
-            model: {
-                provider: "openai",
-                model: "gpt-4",
-                messages: [
-                    {
-                        role: "system",
-                        content: `
-You are an AI voice assistant conducting interviews.
+    // Create assistant on the server using the server-side SDK
+    const createAssistant = async () => {
+        try {
+            const response = await axios.post('/api/vapi/create-assistant', {
+                userName: interviewInfo?.userName,
+                interviewData: interviewInfo?.interviewData,
+                duration: interviewInfo?.duration
+            })
 
-Your job is to ask candidates the provided interview questions and assess their responses.
+            if (!response.data.success) {
+                throw new Error(response.data.error || 'Failed to create assistant')
+            }
 
-Begin with a friendly introduction, setting a relaxed yet professional tone.
-
-Ask one question at a time and wait for the candidate’s response before proceeding. 
-Do NOT give out the answers to any questions. If the candidate struggles or asks for help, offer only abstract hints (no examples or basic hints), or simplify the question to a short-answer format.
-
-If the candidate does not respond within 15 seconds, gently move on to the next question with a phrase like:
-"Let's move to the next one!"
-
-If the interview is near the end of the allotted duration (${durationMin} minutes), alert the candidate:
-"We're running short on time, so I'll keep the next questions brief."
-
-Reduce the number of questions if time is short, and make questions concise and quick to answer.
-
-Provide brief, encouraging feedback after each answer, such as:
-"Nice! That’s a solid answer."
-or
-"Hmm, not quite! Want to try again?"
-
-Keep the conversation natural and engaging—use casual phrases like "Alright, next up..." or "Let’s tackle a tricky one!"
-
-After certain questions (like almost at the end of questions) or when time is up, wrap up the interview smoothly by summarizing their performance and end on a positive note.
-
-Key Guidelines:
-✅ Be friendly, engaging, and witty 🎤
-✅ Keep responses short and natural, like a real conversation
-✅ Adapt based on the candidate’s confidence level and remaining time
-✅ Ensure the interview remains focused on React
-✅ Never reveal the correct answer, only offer abstract hints or encouragement
-✅ If no answer is given after sufficient time, move to the next question
-✅ If time is running out, make questions shorter and reduce the total number asked
-Never give any answer or hints to candidates even if they ask for it.
-
-Questions: ${questionList}
-`.trim(),
-                    },
-                ],
-            },
+            return response.data.assistantId
+        } catch (error) {
+            console.error('Error creating assistant:', error)
+            throw error
         }
-        vapi.start(assistantOptions)
+    }
+
+    // Enhanced function to start the Vapi call with server-side assistant creation
+    const startCall = async () => {
+        try {
+            // First, create the assistant on the server
+            const assistantId = await createAssistant()
+
+            if (!assistantId) {
+                throw new Error('No assistant ID returned from server')
+            }
+
+            // Start the call with just the assistant ID
+            vapi.start(assistantId)
+        } catch (error) {
+            console.error('Error starting call:', error)
+            toast.error('Failed to start interview. Please try again.')
+            setShowLoading(false)
+            throw error
+        }
     }
 
     // Function to stop the interview manually
     const stopInterview = () => {
         setTimerActive(false)
-        
+
         // Set the manual stop flag to true before stopping the call
         manualStopRef.current = true
-        
+
         // Clear silence timer if it exists
         if (silenceTimer) {
             clearTimeout(silenceTimer);
             setSilenceTimer(null);
         }
-        
+
         // Check if we have conversation data
         const hasConversation = conversation && conversation.length > 0;
-        
+
         if (hasConversation) {
             toast("Interview Stopped - Generating feedback...");
-            
+
             try {
                 // Stop the call - the 'call-end' event will trigger feedback generation
                 vapi.stop()
-                
+
                 // Backup timeout to generate feedback if the call-end event doesn't fire
                 setTimeout(() => {
                     if (manualStopRef.current) {
@@ -172,10 +141,10 @@ Questions: ${questionList}
         } else {
             // No conversation data, just stop and show message
             toast.warning("Interview stopped. No conversation was recorded.");
-            
+
             try {
                 vapi.stop();
-                
+
                 // Give user options to restart
                 toast.info("You can restart the interview by refreshing the page", {
                     duration: 8000,
@@ -189,7 +158,7 @@ Questions: ${questionList}
             }
         }
     }
-    
+
     // Function to allow the candidate to interrupt the AI
     const enableInterruptions = () => {
         try {
@@ -208,11 +177,11 @@ Questions: ${questionList}
             return false
         }
     }
-    
+
     // Function to have the AI repeat or clarify a question
     const repeatQuestion = () => {
         try {
-            vapi.say('Could you please repeat the question or explain it further?', 
+            vapi.say('Could you please repeat the question or explain it further?',
                 false, // Don't end call after spoken
                 true,  // Enable interruptions
                 true   // Enable interrupting the assistant
@@ -224,13 +193,13 @@ Questions: ${questionList}
     }
 
 
-    
+
 
 
     // Track silence for hint offering
     const [silenceTimer, setSilenceTimer] = useState(null);
     const [hintOffered, setHintOffered] = useState(false);
-    
+
     // Vapi event listeners with function call handling
     useEffect(() => {
         if (!vapi) {
@@ -240,7 +209,7 @@ Questions: ${questionList}
         const handleMessage = message => {
             if (message?.conversation) {
                 setConversation(message.conversation)
-                
+
                 // Track questions asked based on conversation length
                 const newConversation = message.conversation
                 if (newConversation.length > questionsAsked) {
@@ -254,23 +223,23 @@ Questions: ${questionList}
             if (message?.type === 'speech-start') {
                 setActiveUser(false)
                 setWaitingForResponse(false)
-                
+
                 // Clear silence timer when AI starts speaking
                 if (silenceTimer) {
                     clearTimeout(silenceTimer);
                     setSilenceTimer(null);
                 }
             }
-            
+
             if (message?.type === 'speech-end') {
                 setActiveUser(true)
                 setWaitingForResponse(true)
-                
+
                 // Start silence detection timer when AI stops speaking
                 if (silenceTimer) {
                     clearTimeout(silenceTimer);
                 }
-                
+
                 // Set a timer to check for silence (10 seconds)
                 const timer = setTimeout(() => {
                     // Only offer a hint if one hasn't been offered for the current question
@@ -279,7 +248,7 @@ Questions: ${questionList}
                         setHintOffered(true);
                     }
                 }, 10000);
-                
+
                 setSilenceTimer(timer);
             }
 
@@ -287,7 +256,7 @@ Questions: ${questionList}
             if (message?.type === 'transcript') {
                 setWaitingForResponse(false)
                 setActiveUser(true)
-                
+
                 // Reset silence timer when user speaks
                 if (silenceTimer) {
                     clearTimeout(silenceTimer);
@@ -295,16 +264,16 @@ Questions: ${questionList}
                 }
             }
         }
-        
+
         // Function to offer hint when silence is detected
         const offerHint = () => {
             try {
-                vapi.say("Would you like a hint for this question?", 
+                vapi.say("Would you like a hint for this question?",
                     false, // Don't end call after spoken
                     true,  // Enable interruptions
                     true   // Enable interrupting the assistant
                 );
-                toast.info("Hint offered due to silence", { 
+                toast.info("Hint offered due to silence", {
                     duration: 3000,
                     description: "Say 'yes' if you'd like some guidance"
                 });
@@ -318,10 +287,10 @@ Questions: ${questionList}
             if (manualStopRef.current) {
                 return
             }
-            
+
             if (toastIds.current.callStart) toast.dismiss(toastIds.current.callStart)
-            toastIds.current.callStart = toast("🎙️ Interview Started - AI is listening...", { 
-                id: "callStart", 
+            toastIds.current.callStart = toast("🎙️ Interview Started - AI is listening...", {
+                id: "callStart",
                 duration: 3000,
                 description: "Speak clearly and take your time with responses"
             })
@@ -334,17 +303,17 @@ Questions: ${questionList}
                 proceedWithEnding()
                 return
             }
-            
+
             // If the conversation is too short, this might be an error disconnect
             const minValidConversation = 2 // At least 2 exchanges
-            
+
             if (conversation.length < minValidConversation) {
                 // Check if we have enough time left to restart
                 if (secondsElapsed < (interviewInfo?.duration || 30) * 60 * 0.8) { // If less than 80% of time used
                     toast.warning('Interview connection reset. Reconnecting...', {
                         duration: 3000,
                     })
-                    
+
                     // Try to restart the session
                     setTimeout(async () => {
                         try {
@@ -365,11 +334,11 @@ Questions: ${questionList}
                             }
                         }
                     }, 1500)
-                    
+
                     return
                 }
             }
-            
+
             // Check if we have any conversation data before ending normally
             if (conversation && conversation.length > 0) {
                 // Normal interview completion
@@ -379,7 +348,7 @@ Questions: ${questionList}
                 toast.warning("Interview ended without any conversation recorded", {
                     duration: 5000
                 })
-                
+
                 toast.info("You can restart the interview by refreshing the page", {
                     duration: 8000,
                     action: {
@@ -387,27 +356,27 @@ Questions: ${questionList}
                         onClick: () => window.location.reload()
                     }
                 })
-                
+
                 // Reset interview state but don't generate feedback or redirect
                 setTimerActive(false)
                 setActiveUser(false)
                 setWaitingForResponse(false)
                 setShowLoading(false)
             }
-            
+
             // Function to handle the normal end of interview
             function proceedWithEnding() {
                 if (toastIds.current.callEnd) toast.dismiss(toastIds.current.callEnd)
-                toastIds.current.callEnd = toast("✅ Interview Completed - Generating feedback...", { 
-                    id: "callEnd", 
+                toastIds.current.callEnd = toast("✅ Interview Completed - Generating feedback...", {
+                    id: "callEnd",
                     duration: 3000,
                     description: "Please wait while we process your responses"
                 })
-                
+
                 setTimerActive(false)
                 setActiveUser(false)
                 setWaitingForResponse(false)
-                
+
                 GenerateFeedback()
             }
         }
@@ -419,17 +388,17 @@ Questions: ${questionList}
                 setActiveUser(false)
                 setWaitingForResponse(false)
                 setShowLoading(false)
-                
+
                 // Only generate feedback if we have some conversation data
                 if (conversation && conversation.length > 0) {
                     GenerateFeedback()
                 }
                 return
             }
-            
+
             // Determine the most user-friendly error message
             let errorMessage = 'An error occurred with the interview';
-            
+
             if (typeof error === 'string') {
                 errorMessage = error;
             } else if (error) {
@@ -437,14 +406,14 @@ Questions: ${questionList}
                 else if (error.error?.message) errorMessage = error.error.message;
                 else if (typeof error.error === 'string') errorMessage = error.error;
             }
-            
+
             // Display error and reset interview state
             toast.error(`Interview error: ${errorMessage}`);
             setTimerActive(false);
             setActiveUser(false);
             setWaitingForResponse(false);
             setShowLoading(false);
-            
+
             // Add option to retry the interview
             toast.info("You can retry the interview by refreshing the page", {
                 duration: 8000,
@@ -466,7 +435,7 @@ Questions: ${questionList}
             vapi.off("call-end", handleCallEnd)
             vapi.off("error", handleError)
             Object.values(toastIds.current).forEach(id => toast.dismiss(id))
-            
+
             // Clear silence timer on cleanup
             if (silenceTimer) {
                 clearTimeout(silenceTimer)
@@ -480,7 +449,7 @@ Questions: ${questionList}
         if (showLoading) {
             return
         }
-        
+
         // Check if we have any conversation data
         const hasConversation = conversation && conversation.length > 0;
         if (!hasConversation && !manualStopRef.current) {
@@ -489,17 +458,17 @@ Questions: ${questionList}
             setShowLoading(false);
             return;
         }
-        
+
         // Set a static flag to prevent multiple feedback generation attempts
         GenerateFeedback.isGenerating = true
         setShowLoading(true)
-        
+
         try {
             // Prepare conversation data - ensure it's an array even if empty
             const conversationData = JSON.stringify(conversation || [])
-            
+
             // Get feedback from the API
-            const result = await axios.post('/api/ai-feedback', { 
+            const result = await axios.post('/api/ai-feedback', {
                 conversation: conversationData,
                 interviewData: interviewInfo?.interviewData || {},
                 ensureFeedback: true // Signal that we need feedback even if conversation is empty
@@ -507,7 +476,7 @@ Questions: ${questionList}
                 timeout: 30000,
                 headers: { 'Content-Type': 'application/json' }
             })
-            
+
             if (!result?.data) {
                 throw new Error('No response data from feedback API')
             }
@@ -516,7 +485,7 @@ Questions: ${questionList}
             if (!content) {
                 throw new Error('No content in feedback API response')
             }
-            
+
             // Parse feedback content
             let feedbackData;
             try {
@@ -534,7 +503,7 @@ Questions: ${questionList}
             const technical_score = feedbackData?.technicalEvaluation?.score || null
             const communication_score = feedbackData?.communicationEvaluation?.score || null
             const problem_solving_score = feedbackData?.problemSolvingEvaluation?.score || null
-            
+
             const scores = [technical_score, communication_score, problem_solving_score]
                 .filter(s => s !== null && !isNaN(s))
             const ai_score = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 50
@@ -578,21 +547,21 @@ Questions: ${questionList}
             }
 
             toast.success('🎉 Interview analysis complete! Redirecting to results...')
-            
+
             // Set the manualStopRef to true to prevent any subsequent restart attempts
             manualStopRef.current = true
-            
+
             // Navigate to the completion page only on success
             router.replace(`/interview/${interview_id}/completed`)
-            
+
         } catch (error) {
             console.error('Error generating feedback:', error);
-            
+
             // Try to save a basic feedback record even if AI analysis failed
             try {
                 await createFallbackFeedback()
                 toast.success('Interview completed - basic feedback saved')
-                
+
                 // Only redirect after saving fallback feedback
                 router.replace(`/interview/${interview_id}/completed`)
             } catch (fallbackError) {
@@ -601,7 +570,7 @@ Questions: ${questionList}
             }
         } finally {
             setShowLoading(false)
-            
+
             // Set the manualStopRef to true to prevent any subsequent restart attempts
             manualStopRef.current = true
         }
@@ -711,27 +680,27 @@ Questions: ${questionList}
 
     // Audio visualization state
     const [volumeLevel, setVolumeLevel] = useState(0)
-    
+
     // Add volume level listener - critical for audio visualization
     useEffect(() => {
         if (!vapi) return;
-        
+
         const handleVolumeChange = (volume) => {
             setVolumeLevel(volume)
         }
-        
+
         vapi.on('volume-level', handleVolumeChange)
-        
+
         return () => {
             vapi.off('volume-level', handleVolumeChange)
         }
     }, [vapi])
-    
+
     // Function to adjust voice settings mid-interview
     const adjustVoiceSettings = (settings = {}) => {
         try {
             const { speed = 1.0, clarity = 0.75 } = settings
-            
+
             vapi.send({
                 type: 'control',
                 control: 'adjust-voice',
@@ -741,18 +710,18 @@ Questions: ${questionList}
                     stability: 0.7
                 }
             })
-            
-            toast.success('Voice settings adjusted', { 
+
+            toast.success('Voice settings adjusted', {
                 duration: 2000,
                 description: `Speed: ${speed}x, Clarity: ${Math.round(clarity * 100)}%`
             })
-            
+
             return true
         } catch (error) {
             return false
         }
     }
-    
+
     return {
         showLoading,
         secondsElapsed,

@@ -7,12 +7,12 @@ import moment from 'moment'
 
 export default function CandidateReportHeader({ candidate, interviewData }) {
   if (!candidate || !interviewData) return null
-  
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Link href={`/interview-details/${interviewData.id}/candidate-details`}>
+          <Link href={`/interview-details/${interviewData.interview_id}/candidate-details`}>
             <Button variant="ghost" size="sm" className="h-9 gap-1">
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -20,14 +20,14 @@ export default function CandidateReportHeader({ candidate, interviewData }) {
           </Link>
           <h1 className="text-2xl font-bold tracking-tight">Candidate Report</h1>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <div className="text-sm text-muted-foreground">
             Position: <span className="font-medium text-foreground">{interviewData?.jobPosition || 'Not specified'}</span>
           </div>
         </div>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -41,7 +41,7 @@ export default function CandidateReportHeader({ candidate, interviewData }) {
             </div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-sm w-full sm:w-auto sm:ml-auto">
           <div className="flex flex-col">
             <span className="text-gray-500 flex items-center gap-1">
@@ -51,18 +51,18 @@ export default function CandidateReportHeader({ candidate, interviewData }) {
               {moment(candidate.appliedAt).format('MMM D, YYYY')}
             </span>
           </div>
-          
+
           <div className="flex flex-col">
             <span className="text-gray-500 flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" /> Interviewed
             </span>
             <span className="font-medium">
-              {candidate.completedAt 
+              {candidate.completedAt
                 ? moment(candidate.completedAt).format('MMM D, YYYY')
                 : 'Not completed'}
             </span>
           </div>
-          
+
           {candidate.candidateFeedbackScore && (
             <div className="flex flex-col">
               <span className="text-gray-500">Candidate Feedback</span>
